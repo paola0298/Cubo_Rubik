@@ -1,1 +1,1 @@
-# Cubo_Rubik
+# Rubik Simulator
