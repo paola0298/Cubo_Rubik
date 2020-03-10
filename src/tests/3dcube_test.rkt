@@ -11,7 +11,7 @@
 (define lights+camera
   (combine (light (pos 0 1 2) (emitted "Thistle"))
            (light (pos 0 -1 -2) (emitted "PowderBlue"))
-           (basis 'camera (point-at (pos 4 4 0) origin))))
+           (basis 'camera (point-at (pos 4 4 3) origin))))
 
 ;; (pos x y z)
 ;; (with-color (rgba "color") (object position scale))
@@ -19,7 +19,8 @@
 
 (define (on-draw s n t) 
     (combine 
-        (rotate-z lights+camera (/ t 30)) 
+;;        (rotate-z lights+camera (/ t 30)) 
+        lights+camera
         (with-color (rgba "pink") (cube (pos 0 0 1) 1/2))
         (with-color (rgba "orange") (cube (pos 0 0 -1) 1/2))
         (with-color (rgba "white") (cube (pos 0 1 0) 1/2))
