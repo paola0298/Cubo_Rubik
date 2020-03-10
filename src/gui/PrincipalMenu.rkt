@@ -58,7 +58,7 @@
     [parent secuencialPanel]
     [label "Modo Secuencial"]))
 
-(define settingsPanel(new horizontal-panel%
+(define settingsPanel(new vertical-panel%
     [parent secuencialPanel]
     [horiz-margin 15]
     [vert-margin 15]
