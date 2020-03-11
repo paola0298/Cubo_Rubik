@@ -11,9 +11,21 @@
 (define lights+camera
   (combine (light (pos 0 1 2) (emitted "Thistle"))
            (light (pos 0 -1 -2) (emitted "PowderBlue"))
-           (basis 'camera (point-at (pos 1 1 0) origin))))
+           (basis 'camera (point-at (pos 1.5 1.5 1.5) origin))))
  
 (define (on-draw s n t) 
-    (combine (rotate-z (cube origin 1/2) (/ t 30)) lights+camera))
- 
+    (combine 
+        (rotate-z 
+            (combine 
+                (with-color (rgba "gray") (cube (pos 0 0 0) 1/2))
+                (with-color (rgba "yellow") (cube (pos 0.12 0 0) 0.4))
+                (with-color (rgba "green") (cube (pos 0 0.12 0) 0.4))
+                (with-color (rgba "pink") (cube (pos 0 0 0.12) 0.4))
+            ) 
+            (/ t 30)) 
+        lights+camera
+
+    ))
+
+
 (big-bang3d 0 #:on-draw on-draw)
