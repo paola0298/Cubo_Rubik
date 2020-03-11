@@ -14,6 +14,6 @@
            (basis 'camera (point-at (pos 1 1 0) origin))))
  
 (define (on-draw s n t) 
-    (combine (rotate-z (cube origin 1/2) (/ t 30)) lights+camera))
- 
-(big-bang3d 0 #:on-draw on-draw)git 
+    ;(combine (rotate-z (cube origin 1/2) (/ t 30)) lights+camera))
+    (combine (cube origin 1/2) lights+camera))
+(big-bang3d 0 #:on-draw on-draw)
