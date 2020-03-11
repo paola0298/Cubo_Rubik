@@ -89,6 +89,9 @@
 (define (rotate_row row cw cube)
     (cond 
         (cw ;; Rotar hacia el sentido de las agujas del reloj.
+            (cond 
+                ()
+            )
             (apply_list row (first_to_last (get_all_rows row cube)) cube)
         )
         (else 
@@ -101,21 +104,27 @@
 ;; @param cube: Estado de cubo.
 (define (get_all_rows row cube)
     (get_all_rows_aux 4 row cube))
+    
 (define (get_all_rows_aux i row cube)
     (cond 
-        ((zero? i) '())
-        (else (cons (get_row row (get_face_matrix (car cube))) (get_all_rows_aux (- i 1) row (cdr cube))))
+        ((zero? i) 
+            '())
+        (else 
+            (cons (get_row row (get_face_matrix (car cube)))
+                  (get_all_rows_aux (- i 1) row (cdr cube))))
     ))
 
 ;; Función para poner el primer elemento de último.
 ;; @param rows: Lista de filas.
 (define (first_to_last rows)
-    (append (cdr rows) (list (car rows))))
+    (append (cdr rows) 
+            (list (car rows))))
 
 ;; Función para poner el último elemento de primero.
 ;; @param rows: Lista de filas.
 (define (last_to_first rows)
     (reverse (first_to_last (reverse rows))))
+
 (define (reverse l)
     (cond
         ((null? l) '()) 
@@ -129,7 +138,7 @@
 (define (apply_list row rows cube)
     (cond 
         ((null? rows) 
-            '())
+            cube)
         (else 
             (cons 
                 (append 
@@ -138,10 +147,24 @@
                 (apply_list row (cdr rows) (cdr cube))))
     ))
 
-;; (rotate_row row cw cube)
-(rotate_row 1 #f cube)
+;; (rotate_row 1 #f cube)
 
-;; 1. Sacar la lista de filas. OK
-;; 2. Dependiendo de la dirección de la rotación acomodar la lista. OK
-;; 3. Sobreescribir la lista en el cubo.
+(define (rotate_matrix_cw matrix)
+    ())
+
+
+(define (col_to_row matrix)
+    (cond 
+        ((null? matrix) 
+            '())
+        (else 
+            (cons (caar matrix) (col_to_row (cdr matrix))))
+    ))
+
+(define (delete_col matrix)
+    (cond 
+        ((null? matrix) '())
+        (else 
+            (cons (cdar matrix) (delete_col (cdr matrix))))
+    ))
 
