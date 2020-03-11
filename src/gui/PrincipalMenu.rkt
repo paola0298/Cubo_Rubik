@@ -56,7 +56,8 @@
 
 (define welcomeSecuencialMessage (new message% 
     [parent secuencialPanel]
-    [label "Modo Secuencial"]))
+    [label "Modo Secuencial"]
+    [font (make-object font% 17 'default 'normal 'bold)]))
 
 (define settingsPanel(new vertical-panel%
     [parent secuencialPanel]
@@ -118,15 +119,31 @@
     [min-height 50]
     [style '(multiple)]))
 
+(define (getParameters size initial movements)
+    (printf "Size ~a.\n" size)
+    (printf "Initial state of cube ~a.\n" initial)
+    (printf "Movements ~a.\n" movements))
+
+(define (initSecuencialCallback b e)
+    (let ((size (send sizeSlider get-value))
+          (initialCube (send initialTextField get-value))
+          (movements (send movementsTextField get-value)))
+    (cond ((and (equal? initialCube "") (equal? movements "")
+        (message-box "Error" "Por favor complete todos los campos" secuencialFrame '(stop ok))))
+        (else 
+            (send secuencialFrame show #f)
+            ;llamar la funcion para mostrar el cubo
+            (getParameters size initialCube movements)
+            ))))
+
+
 (define initSecuencialButton (new button%
     [parent secuencialPanel]
     ;[min-width 150]
     ;[min-height 100]
-    ;[font (make-object font% 25 'default 'normal 'bold)]
+    [font (make-object font% 15 'default 'normal 'bold)]
     [label "Iniciar"]
-    [callback (lambda (button event)
-            (send secuencialFrame show #f)
-            )]))
+    [callback initSecuencialCallback]))
 
 
 
