@@ -239,11 +239,6 @@
 ;; Función para rotar una cara hacia la izquierda o derecha.
 ;; @param cw: Boleano que indica hacia que lado rotar
 ;; @param face: Cara del cubo a rotar.
-(define (rotate_face_old cw face)
-    (cons 
-        (is_face_selected? face) 
-        (rotate_matrix cw (get_face_matrix face))))
-
 (define (rotate_face cw index cube)
     (cond 
         ((null? cube) 
@@ -298,6 +293,5 @@
         (else 
             (cons (cdar matrix) (delete_col (cdr matrix))))
     ))
-
 
 (rotate_row 3 2 #f cube)
