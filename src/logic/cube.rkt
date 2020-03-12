@@ -46,8 +46,81 @@
 ;; @param cube: Estado del cubo. 
 (define (actual_face? cube) 
     (cond 
-        ((caar cube) (cadar cube))
-        (else (actual_face? (cdr cube)))
+        ((caar cube) 
+            (cadar cube))
+        (else 
+            (actual_face? (cdr cube)))
+    ))
+
+;; Función para obtener la cara superior del cubo.
+;; @param cube: Estado del cubo.
+(define (get_top cube)
+    (cond 
+        ((null? (cddr cube))
+            (car cube))
+        (else 
+            (get_top (cdr cube)))
+    ))
+
+;; Función para verificar si una cara dada es la superior.
+;; @param face: Cara a verificar.
+;; @param cube: Estado del cubo.
+(define (is_top? face cube)
+    (equal? face (get_top cube)))
+
+;; Función para obtener la cara inferior del cubo.
+;; @param cube: Estado del cubo.
+(define (get_bottom cube)
+    (cond 
+        ((null? (cdr cube))
+            (car cube))
+        (else 
+            (get_bottom (cdr cube)))
+    ))
+
+;; Función para verificar si una cara dada es la inferior.
+;; @param face: Cara a verificar.
+;; @param cube: Estado del cubo.
+(define (is_bottom? face cube)
+    (equal? face (get_bottom cube)))
+
+
+;; Función para obtener el índice de una cara.
+;; @param face: Cara a obtener su índice.
+;; @param cube: Estado del cubo.
+(define (get_face_index face cube)
+    (cond 
+        ((equal? (car cube) face)
+            0)
+        (else 
+            (+ 1 (get_face_index face (cdr cube))))
+    ))
+
+;; Función para obtener la cara en un índice dado.
+;; @param index: Índice del cual buscar la cara.
+;; @param cube: Estado del cubo.
+(define (get_face_at index cube)
+    (cond 
+        ((zero? index) 
+            (car cube))
+        (else 
+            (get_face_at (- index 1) (cdr cube)))
+    ))
+
+(define (set_face_at index face cube)
+    (#F))
+
+;; Función para obtener la cara opuesta a otra.
+;; @param face: Cara de la cual obtener su opuesta.
+;; @param cube: Estado del cubo.
+(define (get_back_of face cube)
+    (cond 
+        ((is_top? face cube)
+            (get_bottom cube))
+        ((is_bottom? face cube)
+            (get_top cube))
+        (else
+            (get_face_at (remainder (+ (get_face_index face cube ) 2) 4) cube))
     ))
 
 ;; Función para verificar si la cara dada está seleccionada.
@@ -64,10 +137,12 @@
 ;; @param i: Posición inicial (0).
 ;; @param row: Índice de la fila a devolver.
 ;; @param face: Cara de donde obtener la fila.
-(define (get_row row face)
+(define (get_row row matrix)
     (cond 
-        ((zero? row) (car face))
-        (else (get_row (- row 1) (cdr face)))
+        ((zero? row) 
+            (car matrix))
+        (else 
+            (get_row (- row 1) (cdr matrix)))
     ))
 
 ;; Función para sobreescribir una fila.
@@ -75,28 +150,34 @@
 ;; @param row: Índice de la fila a sobreescribir.
 ;; @param new_row: Fila a escribir.
 ;; @param face: Cara donde sobreescribir la fila.
-(define (set_row row new_row face)
+(define (set_row row new_row matrix)
     (cond 
-        ((null? face) '())
-        ((zero? row) (cons new_row (set_row (- row 1) new_row (cdr face))))
-        (else (cons (car face) (set_row (- row 1) new_row (cdr face))))
+        ((null? matrix) 
+            '())
+        ((zero? row) 
+            (cons 
+                new_row 
+                (set_row (- row 1) new_row (cdr matrix))))
+        (else 
+            (cons 
+                (car matrix) 
+                (set_row (- row 1) new_row (cdr matrix))))
     ))
 
 ;; Función para rotar una fila del cubo.
+;; @param n: Tamaño del cubo
 ;; @param row: Índice de la fila a rotar.
 ;; @param cw: Boleano que indica si la rotación es en el sentido de las agujas del reloj o al revés.
 ;; @param cube: Estado del cubo.
-(define (rotate_row row cw cube)
+
+(define (rotate_row n row cw cube)
     (cond 
-        (cw ;; Rotar hacia el sentido de las agujas del reloj.
-            (cond 
-                ()
-            )
-            (apply_list row (first_to_last (get_all_rows row cube)) cube)
-        )
+        ((zero? row) 
+            (rotate_face cw 4 (apply_list row (prepare_rows cw (get_all_rows row cube)) cube)))
+        ((equal? (- n 1) row) 
+            (rotate_face (not cw) 5 (apply_list row (prepare_rows cw (get_all_rows row cube)) cube)))
         (else 
-            (apply_list row (last_to_first (get_all_rows row cube)) cube)
-        )
+            (apply_list row (prepare_rows cw (get_all_rows row cube)) cube))
     ))
 
 ;; Función para obtener la fila seleccionada de todas las caras laterales.
@@ -104,7 +185,6 @@
 ;; @param cube: Estado de cubo.
 (define (get_all_rows row cube)
     (get_all_rows_aux 4 row cube))
-    
 (define (get_all_rows_aux i row cube)
     (cond 
         ((zero? i) 
@@ -112,6 +192,14 @@
         (else 
             (cons (get_row row (get_face_matrix (car cube)))
                   (get_all_rows_aux (- i 1) row (cdr cube))))
+    ))
+
+(define (prepare_rows cw rows)
+    (cond 
+        (cw 
+            (first_to_last rows))
+        (else 
+            (last_to_first rows))
     ))
 
 ;; Función para poner el primer elemento de último.
@@ -125,6 +213,7 @@
 (define (last_to_first rows)
     (reverse (first_to_last (reverse rows))))
 
+;; Función para darle vuelta a una lista.
 (define (reverse l)
     (cond
         ((null? l) '()) 
@@ -147,24 +236,68 @@
                 (apply_list row (cdr rows) (cdr cube))))
     ))
 
-;; (rotate_row 1 #f cube)
+;; Función para rotar una cara hacia la izquierda o derecha.
+;; @param cw: Boleano que indica hacia que lado rotar
+;; @param face: Cara del cubo a rotar.
+(define (rotate_face_old cw face)
+    (cons 
+        (is_face_selected? face) 
+        (rotate_matrix cw (get_face_matrix face))))
 
-(define (rotate_matrix_cw matrix)
-    ())
+(define (rotate_face cw index cube)
+    (cond 
+        ((null? cube) 
+            '())
+        ((zero? index) 
+            (cons 
+                (append 
+                    (list (is_face_selected? (car cube)))
+                    (list (rotate_matrix cw (get_face_matrix (car cube)))))
+                (rotate_face cw (- index 1) (cdr cube))))
+        (else 
+            (cons (car cube) (rotate_face cw (- index 1) (cdr cube))))
+    ))
 
+;; Función para rotar una matriz hacia la izquierda o derecha.
+;; @param cw: Boleano que indica hacia que lado rotar.
+;; @param matrix: Matriz a rotar.
+(define (rotate_matrix cw matrix)
+    (cond 
+        ((null? matrix) 
+            '())
+        (cw 
+            (append 
+                (list (reverse (col_to_row matrix)))
+                (rotate_matrix cw (delete_col matrix))))
+        (else 
+            (append 
+                (rotate_matrix cw (delete_col matrix))
+                (list (col_to_row matrix))))
+    ))
 
+;; Función que pasa las columnas de una matriz a filas.
+;; @param matrix: Matriz de entrada.
 (define (col_to_row matrix)
     (cond 
         ((null? matrix) 
             '())
         (else 
-            (cons (caar matrix) (col_to_row (cdr matrix))))
+            (cons 
+                (caar matrix) 
+                (col_to_row (cdr matrix))))
     ))
 
+;; Función que elimina la primer columna de una matriz.
+;; @param matrix: Matriz de entrada.
 (define (delete_col matrix)
     (cond 
-        ((null? matrix) '())
+        ((null? matrix) 
+            '())
+        ((null? (cdar matrix)) 
+            (delete_col (cdr matrix)))
         (else 
             (cons (cdar matrix) (delete_col (cdr matrix))))
     ))
 
+
+(rotate_row 3 2 #f cube)
