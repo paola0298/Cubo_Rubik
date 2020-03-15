@@ -44,13 +44,14 @@
 
 ;; Función para obtener la cara seleccionada.
 ;; @param cube: Estado del cubo. 
-(define (actual_face? cube) 
+(define (actual_face cube) 
     (cond 
         ((caar cube) 
-            (cadar cube))
+            (car cube))
         (else 
-            (actual_face? (cdr cube)))
+            (actual_face (cdr cube)))
     ))
+
 
 ;; Función para obtener la cara superior del cubo.
 ;; @param cube: Estado del cubo.
@@ -235,7 +236,7 @@
                     (list (set_row row (car rows) (get_face_matrix (car cube)))))
                 (apply_list row (cdr rows) (cdr cube))))
     ))
-
+ 
 ;; Función para rotar una cara hacia la izquierda o derecha.
 ;; @param cw: Boleano que indica hacia que lado rotar
 ;; @param face: Cara del cubo a rotar.
@@ -294,4 +295,57 @@
             (cons (cdar matrix) (delete_col (cdr matrix))))
     ))
 
-(rotate_row 3 2 #f cube)
+;(rotate_row 3 2 #f cube)
+
+;; Funcion para obtener una columna en cierto indice dado
+;; @param i: indice de la columna a obtener
+;; @param matrix: matriz/cara de donde obtener la columna
+(define (get_column i matrix)
+    (cond 
+        ((zero? i) 
+            (col_to_row matrix))
+        (else 
+            (get_column (- i 1) (delete_col matrix)))))
+
+;; Funcion para obtener todas las columnas laterales, segun la columna seleccionada
+;; @param col: indice de la columna a obtener
+;; @param cube: Estado del cubo
+(define (get_all_columns col cube)
+    (get_all_columns_aux 4 col cube))
+
+(define (get_all_columns_aux i col cube)
+    (cond 
+        ((zero? i) 
+            '())
+        ((equal? i 4) 
+            (cons 
+                (get_column col (get_face_matrix(actual_face cube)))
+                (get_all_columns_aux (- i 1) col cube)))
+        ((equal? i 3)
+            (cons
+                (get_column col (reverse(get_face_matrix(get_top cube))))
+                (get_all_columns_aux (- i 1) col cube)))
+        ((equal? i 2)
+            (cons
+                (get_column col (reverse(get_face_matrix(get_back_of (actual_face cube) cube))))
+                (get_all_columns_aux (- i 1) col cube)))
+        ((equal? i 1)
+            (cons
+                (get_column col (get_face_matrix(get_bottom cube)))
+                (get_all_columns_aux (- i 1) col cube)))
+    )
+)
+
+(get_all_columns 1 cube)
+
+;; Funcion para reemplazar una columna
+;; @param col: indice de la columa
+;; @param new_col: la columna a escribir
+;; @param matrix: cara donde se escribira la nueva columna
+(define (set_column col new_col matrix)
+    (reverse(rotate_matrix #f
+        (set_row col new_col (rotate_matrix #f matrix)))
+    )
+)
+
+
