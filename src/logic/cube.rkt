@@ -124,6 +124,9 @@
             (get_face_at (remainder (+ (get_face_index face cube ) 2) 4) cube))
     ))
 
+(define (is_back_of? face back)
+    (equal? back (get_back_of face)))
+
 ;; Función para verificar si la cara dada está seleccionada.
 ;; @param face: Cara del cubo a verificar.
 (define (is_face_selected? face)
@@ -174,11 +177,11 @@
 (define (rotate_row n row cw cube)
     (cond 
         ((zero? row) 
-            (rotate_face cw 4 (apply_list row (prepare_rows cw (get_all_rows row cube)) cube)))
+            (rotate_face cw 4 (apply_rows_list row (sort_lists cw (get_all_rows row cube)) cube)))
         ((equal? (- n 1) row) 
-            (rotate_face (not cw) 5 (apply_list row (prepare_rows cw (get_all_rows row cube)) cube)))
+            (rotate_face (not cw) 5 (apply_rows_list row (sort_lists cw (get_all_rows row cube)) cube)))
         (else 
-            (apply_list row (prepare_rows cw (get_all_rows row cube)) cube))
+            (apply_rows_list row (sort_lists cw (get_all_rows row cube)) cube))
     ))
 
 ;; Función para obtener la fila seleccionada de todas las caras laterales.
@@ -195,7 +198,7 @@
                   (get_all_rows_aux (- i 1) row (cdr cube))))
     ))
 
-(define (prepare_rows cw rows)
+(define (sort_lists cw rows)
     (cond 
         (cw 
             (first_to_last rows))
@@ -225,7 +228,7 @@
 ;; @param row: Índice de la fila.
 ;; @param rows: Lista de filas.
 ;; @param cube: Estado del cubo.
-(define (apply_list row rows cube)
+(define (apply_rows_list row rows cube)
     (cond 
         ((null? rows) 
             cube)
@@ -234,7 +237,7 @@
                 (append 
                     (list (is_face_selected? (car cube))) 
                     (list (set_row row (car rows) (get_face_matrix (car cube)))))
-                (apply_list row (cdr rows) (cdr cube))))
+                (apply_rows_list row (cdr rows) (cdr cube))))
     ))
  
 ;; Función para rotar una cara hacia la izquierda o derecha.
@@ -323,11 +326,11 @@
                 (get_all_columns_aux (- i 1) col cube)))
         ((equal? i 3)
             (cons
-                (get_column col (reverse(get_face_matrix(get_top cube))))
+                (get_column col (get_face_matrix(get_top cube)))
                 (get_all_columns_aux (- i 1) col cube)))
         ((equal? i 2)
             (cons
-                (get_column col (reverse(get_face_matrix(get_back_of (actual_face cube) cube))))
+                (get_column col (get_face_matrix(get_back_of (actual_face cube) cube)))
                 (get_all_columns_aux (- i 1) col cube)))
         ((equal? i 1)
             (cons
@@ -336,7 +339,7 @@
     )
 )
 
-(get_all_columns 1 cube)
+;(get_all_columns 1 cube)
 
 ;; Funcion para reemplazar una columna
 ;; @param col: indice de la columa
@@ -347,5 +350,138 @@
         (set_row col new_col (rotate_matrix #f matrix)))
     )
 )
+
+
+;; Funcion para aplicar la lista de columnas al cubo
+;; @param col: indice de la columna
+;; @param columns: lista de columnas
+;; @param cube: estado del cubo
+;; @param n: tamaño del cubo
+(define (apply_col_list col columns cube n)
+    (apply_col_list_aux 5 col columns cube n))
+
+(define (apply_col_list_aux i col columns cube n)
+    (cond 
+        ((zero? i) ;bottom
+            (cons 
+                (list (is_face_selected? (car cube)))
+                (list (set_column col (cadr columns) (get_face_matrix (car cube))))))
+        ((equal? i 1) ;top
+            (cons 
+                (append
+                    (list (is_face_selected? (car cube)))
+                    (list (set_column col (car columns) (get_face_matrix (car cube)))))
+                (apply_col_list_aux (- i 1) col (cdr columns) (cdr cube) n)))
+        ((equal? i 2) ;back_of
+            (cons 
+                (append
+                    (list (is_face_selected? (car cube)))
+                    (list (set_column (- (- n 1) col) (cadr columns) (get_face_matrix (car cube)))))
+                (apply_col_list_aux (- i 1) col columns (cdr cube) n)))
+        ((equal? i 4) ;actual face
+            (cons 
+                (append
+                    (list (is_face_selected? (car cube)))
+                    (list (set_column col (car columns) (get_face_matrix (car cube)))))
+                (apply_col_list_aux (- i 1) col (cdr columns) (cdr cube) n)))
+        (else 
+            (cons 
+                (car cube)
+                (apply_col_list_aux (- i 1) col columns (cdr cube) n)))
+    ))
+
+;; Funcion para cambiar el orden de los elementos de la lista de columnas
+;; segun hacia donde es el movimiento
+;; @param columns: lista de columnas
+;; @param flag: determina si el movimiento es hacia arriba o abajo, #t arriba #f abajo 
+(define (reverse_columns columns flag)
+    (reverse_columns_aux columns flag 0))
+
+(define (reverse_columns_aux columns flag count)
+    (cond 
+        ((null? columns)
+            '())
+        ((and flag (equal? count 1)
+            (cons
+                (reverse (car columns))
+                (reverse_columns_aux (cdr columns) flag (+ count 1)))))
+        ((equal? count 2)
+            (cons 
+                (reverse (car columns))
+                (reverse_columns_aux (cdr columns) flag (+ count 1))))
+        ((and (not flag) (equal? count 3))
+            (cons
+                (reverse (car columns))
+                (reverse_columns_aux (cdr columns) flag (+ count 1))))
+        (else 
+            (cons 
+                (car columns)
+                (reverse_columns_aux (cdr columns) flag (+ count 1))))
+    ))
+
+
+
+;; Funcion para rotar una columna del cubo
+;; @param n: tamaño del cubo
+;; @param col: índice de la fila a rotar
+;; @param down: Boleano que indica si la rotación es hacía arriba o abajo abajo #t arriba #f
+;; @param cube: Estado del cubo
+
+(define (rotate_col n col down cube)
+    (cond 
+        ((zero? col)
+            (rotate_face down 0 
+                (apply_col_list col 
+                    (sort_lists down 
+                        (reverse_columns 
+                            (get_all_columns 0 cube) (not down))) cube n)))
+        ((equal? (- n 1) col)
+            (rotate_face (not down) 2 (apply_col_list col (sort_lists down (reverse_columns (get_all_columns 0 cube) (not down))) cube n)))
+        (else 
+            (apply_col_list col (sort_lists down (reverse_columns (get_all_columns 0 cube) (not down))) cube n))
+    ))
+
+
+
+
+;(rotate_col 3 0 #f cube)
+;(rotate_col 3 1 #f cube)
+;(rotate_col 3 2 #f cube)
+(rotate_col 3 0 #t cube)
+(quote "\n case \n")
+(rotate_col 3 1 #t cube)
+(quote "case \n")
+(rotate_col 3 2 #t cube)
+
+#|
+    hacia abajo, reverse back_of(3) y bottom(4)
+    hacia arriba, reverse back_of(3) y top(2)
+|#
+
+;(get_all_columns 0 cube)
+;(get_all_columns 1 cube)
+;(get_all_columns 2 cube)
+;(reverse_columns (get_all_columns 0 cube) #f)
+;(reverse_columns (get_all_columns 1 cube) #f)
+;(reverse_columns (get_all_columns 2 cube) #f)
+;(reverse_columns (get_all_columns 0 cube) #t)
+
+;(sort_lists #f (reverse_columns (get_all_columns 1 cube) #t))
+;(sort_lists #t (reverse_columns (get_all_columns 1 cube) #f))
+
+;(apply_col_list 2 (sort_lists #f (reverse_columns (get_all_columns 2 cube) #t)) cube)
+
+;(apply_col_list 0 (last_to_first(reverse_columns (get_all_columns 0 cube) #t)) cube) ;hacia arriba
+;(apply_col_list 0 (first_to_last(reverse_columns (get_all_columns 0 cube) #f)) cube) ;hacia abajo
+
+
+;first_to_last hacia abajo
+;last_to_first
+
+
+
+;(get_column 0 (get_face_matrix(get_back_of (actual_face cube) cube)))
+
+;(list (set_column 0 (get_column 0 (get_face_matrix(get_bottom cube))) (get_face_matrix (car cube))))
 
 
