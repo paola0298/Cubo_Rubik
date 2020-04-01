@@ -10,6 +10,8 @@
 ;; 0 - 3: sides of cube
 ;; 4 - 5: top & bottom
 
+(define mov '("C0B" "F1I" "C2A"))
+
 (define cube
     '(
         (#F (("B1" "B1" "B1")
@@ -32,15 +34,38 @@
              ("O3" "O3" "O3")))
     ))
 
-;; Función principal.
-;; @param n: Tamaño del cubo.
-;; @param cube: Estado del cubo.
-;; @param steps: Movimientos a aplicar al cubo.
-(define (RS n cube steps) 
-    (cond 
-        ((zero? n) #F)
-        (else #T)
-        ))
+(define cube2
+    '(
+        (#F (("B1" "B1")
+             ("B2" "B2")))
+        (#T (("W1" "W1")
+             ("W2" "W2")))
+        (#F (("G1" "G1")
+             ("G2" "G2")))
+        (#F (("Y1" "Y1")
+             ("Y2" "Y2")))
+        (#F (("P1" "P1")
+             ("P2" "P2")))
+        (#F (("O1" "O1")
+             ("O2" "O2")))
+    ))
+
+(define cube1
+    '(
+        (#F (("B1")))
+        (#T (("W1")))
+        (#F (("G1")))
+        (#F (("Y1")))
+        (#F (("P1")))
+        (#F (("O1")))
+    ))
+
+
+
+;(substring "C1A" 0 1)
+;(equal? "C" (substring "C1A" 0 1))
+;(string->number "1")
+
 
 ;; Función para obtener la cara seleccionada.
 ;; @param cube: Estado del cubo. 
@@ -51,6 +76,9 @@
         (else 
             (actual_face (cdr cube)))
     ))
+
+
+
 
 
 ;; Función para obtener la cara superior del cubo.
@@ -223,6 +251,7 @@
         ((null? l) '()) 
         ((append (reverse (cdr l)) (list (car l))))
     ))
+(reverse '())
 
 ;; Función para aplicar la lista de filas al cubo.
 ;; @param row: Índice de la fila.
@@ -363,9 +392,11 @@
 (define (apply_col_list_aux i col columns cube n)
     (cond 
         ((zero? i) ;bottom
-            (cons 
-                (list (is_face_selected? (car cube)))
-                (list (set_column col (cadr columns) (get_face_matrix (car cube))))))
+            (cons
+                (append 
+                    (list (is_face_selected? (car cube)))
+                    (list (set_column col (cadr columns) (get_face_matrix (car cube)))))
+                '()))
         ((equal? i 1) ;top
             (cons 
                 (append
@@ -444,14 +475,16 @@
 
 
 
-;(rotate_col 3 0 #f cube)
+;(rotate_col 1 0 #f cube)
 ;(rotate_col 3 1 #f cube)
 ;(rotate_col 3 2 #f cube)
-(rotate_col 3 0 #t cube)
-(quote "\n case \n")
-(rotate_col 3 1 #t cube)
-(quote "case \n")
-(rotate_col 3 2 #t cube)
+;(rotate_col 3 0 #t cube)
+;(quote "case")
+;(rotate_col 3 1 #t cube)
+;(quote "case")
+;(rotate_col 3 2 #t cube)
+
+;(rotate_row 2 0 #t cube2)
 
 #|
     hacia abajo, reverse back_of(3) y bottom(4)
@@ -484,4 +517,120 @@
 
 ;(list (set_column 0 (get_column 0 (get_face_matrix(get_bottom cube))) (get_face_matrix (car cube))))
 
+
+
+
+;; Funcion para obtener una lista la secuencia de un movimiento
+;; @param step: string con el paso a realizar
+(define (get_step_list step)
+    (get_step_list_aux step 0 1))
+
+(define (get_step_list_aux step start end)
+    (cond
+        ((equal? start 3)
+            '())
+        (else 
+            (cons 
+                (substring step start end)
+                (get_step_list_aux step (+ start 1) (+ end 1))))
+    
+    )) 
+
+;(get_step_list "C1A")
+;(substring "CIA" 2 3)
+
+;; Funcion para obtener la direccion del cubo
+;; @param dir: direccion del cubo A
+;; filas
+;; cw #t izq  y abajo
+;; cw #f der y arriba
+
+;; columnas
+;; arriba #f
+;; abajo #t
+
+;(rotate_row 3 0 #t cube)
+
+
+(define (get_dir dir)
+    (cond 
+        ((or (equal? dir "I") (equal? dir "B"))
+            #t)
+        (else #f)
+    ))
+
+
+;; Funcion para realizar un movimiento segun lo indicado
+;; @param f_c: indica si es una fila o columna
+;; @param f_c_index: indica el indice de la fila o columna a rotar
+;; @param dir: direccion del movimiento
+;; @param n: tamaño del cubo
+;; @param cube: estado del cubo
+(define (make_movement f_c f_c_index dir n cube)
+    (cond 
+        ((equal? f_c "F") ;Hacer movimiento de filas
+            ;(write dir)
+            (rotate_row n f_c_index dir cube))
+        (else
+            ;(write dir)
+            (rotate_col n f_c_index dir cube)) ; Hacer movimiento de columnas
+    )) 
+
+;; Función principal.
+;; @param n: Tamaño del cubo.
+;; @param cube: Estado del cubo.
+;; @param steps: Movimientos a aplicar al cubo.
+(define (RS n cube steps) 
+    (cond 
+        ((null? steps) cube)
+        (else 
+            (RS n (make_movement 
+                (car(get_step_list (car steps)))
+                (string->number(cadr (get_step_list (car steps))))
+                (get_dir(caddr (get_step_list (car steps))))
+                n cube) (cdr steps))
+        )
+    ))
+
+;(RS 3 cube mov)
+;(get_dir(caddr (get_step_list "F1I")))
+;(quote "Caso")
+#|
+(make_movement "C" 0 "B" 3 
+    (make_movement "F" 1 "I" 3 
+        (make_movement "C" 2 "A" 3 cube)))
+
+
+|#
+
+
+;(rotate_row 3 0 #t cube) ;fila 0 a la izquierda
+;(rotate_row 3 1 #t cube) ;fila 1 a la izquierda
+;(rotate_row 3 2 #t cube) ;fila 2 a la izquierda
+
+;(rotate_row 3 0 #f cube) ;fila 0 a la derecha
+;(rotate_row 3 1 #f cube) ;fila 1 a la derecha
+;(rotate_row 3 2 #f cube) ;fila 2 a la derecha
+
+;(rotate_col 3 0 #t cube) ;columna 0 hacia abajo
+;(rotate_col 3 1 #t cube) ;columna 1 hacia abajo
+;(rotate_col 3 2 #t cube) ;columna 2 hacia abajo
+
+;(rotate_col 3 0 #f cube) ;columna 0 hacia arriba
+;(rotate_col 3 1 #f cube) ;columna 1 hacia arriba
+;(rotate_col 3 2 #f cube) ;columna 2 hacia arriba
+
+(rotate_col 3 2 #f 
+    (rotate_row 3 1 #t  
+        ;cube
+        (rotate_col 3 0 #t cube)
+    )
+)
+
+
+
+#|
+(car(get_step_list (car mov)))
+(string->number(cadr (get_step_list (car mov))))
+(caddr (get_step_list (car mov)))|#
 
