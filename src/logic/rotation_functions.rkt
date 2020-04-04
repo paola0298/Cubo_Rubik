@@ -274,4 +274,126 @@
                 (apply_col_list_aux (- i 1) col columns (cdr cube) n)))
     ))
 
+;; Funcion para cambiar el orden de los elementos de la lista de columnas
+;; segun hacia donde es el movimiento
+;; @param columns: lista de columnas
+;; @param flag: determina si el movimiento es hacia arriba o abajo, #t arriba #f abajo 
+(define (reverse_columns columns flag)
+    (reverse_columns_aux columns flag 0))
 
+(define (reverse_columns_aux columns flag count)
+    (cond 
+        ((null? columns)
+            '())
+        ((and flag (equal? count 1)
+            (cons
+                (reverse (car columns))
+                (reverse_columns_aux (cdr columns) flag (+ count 1)))))
+        ((equal? count 2)
+            (cons 
+                (reverse (car columns))
+                (reverse_columns_aux (cdr columns) flag (+ count 1))))
+        ((and (not flag) (equal? count 3))
+            (cons
+                (reverse (car columns))
+                (reverse_columns_aux (cdr columns) flag (+ count 1))))
+        (else 
+            (cons 
+                (car columns)
+                (reverse_columns_aux (cdr columns) flag (+ count 1))))
+    ))
+
+;; Funcion para rotar una columna del cubo
+;; @param n: tamaño del cubo
+;; @param col: índice de la fila a rotar
+;; @param down: Boleano que indica si la rotación es hacía arriba o abajo abajo #t arriba #f
+;; @param cube: Estado del cubo
+(define (rotate_col n col down cube)
+    (cond 
+        ((zero? col)
+            (rotate_face down 0 
+                (apply_col_list col 
+                    (sort_lists down 
+                        (reverse_columns 
+                            (get_all_columns 0 cube) (not down))) cube n)))
+        ((equal? (- n 1) col)
+            (rotate_face (not down) 2 (apply_col_list col (sort_lists down (reverse_columns (get_all_columns 0 cube) (not down))) cube n)))
+        (else 
+            (apply_col_list col (sort_lists down (reverse_columns (get_all_columns 0 cube) (not down))) cube n))
+    ))
+
+;; Funcion para obtener en una lista la secuencia de un movimiento
+;; @param step: string con el paso a realizar
+(define (get_step_list step)
+    (get_step_list_aux step 0 1))
+
+(define (get_step_list_aux step start end)
+    (cond
+        ((equal? start 3)
+            '())
+        (else 
+            (cons 
+                (substring step start end)
+                (get_step_list_aux step (+ start 1) (+ end 1))))
+    
+    ))
+
+(define (get_dir dir)
+    (cond 
+        ((or (equal? dir "I") (equal? dir "B"))
+            #t)
+        (else #f)
+    ))
+
+;; Filas: I - D -> #t - #f
+;; Columnas: A - B -> #f - #t
+
+
+;; Funcion para realizar un movimiento segun lo indicado
+;; @param mov: Indica si se rota fila o columna.
+;; @param index: Indica el indice de la fila o columna a rotar
+;; @param dir: Direccion del movimiento
+;; @param n: Tamaño del cubo
+;; @param cube: Estado del cubo
+(define (make_movement mov index dir n cube)
+    (cond 
+        ((equal? mov "F") ;Hacer movimiento de filas
+            ;(write dir)
+            (rotate_row n index dir cube))
+        (else
+            ;(write dir)
+            (rotate_col n index dir cube)) ; Hacer movimiento de columnas
+    )) 
+
+;; Función que se utiliza para solo procesar los pasos una vez.
+;; @param steps: Lista de pasos calculada.
+;; @param n: Tamaño del cubo.
+;; @param cube: Estado del cubo.
+(define (prepare_movement steps n cube)
+    (make_movement
+        (car steps)
+        (string->number (cadr steps))
+        (get_dir (caddr steps))
+        n
+        cube
+    ))
+
+;; Función principal del simulador de cubo Rubik.
+;; @param n: Tamaño del cubo.
+;; @param cube: Estado del cubo.
+;; @param steps: Movimientos a aplicar al cubo.
+(define (RS n cube steps)
+    (cond 
+        ((null? steps)
+            cube)
+        (else
+            (RS
+                n
+                (prepare_movement
+                    (get_step_list (car steps))
+                    n
+                    cube)
+                (cdr steps)))
+    ))
+
+(RS 3 cube3x3alt '("C0A"))
