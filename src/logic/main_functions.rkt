@@ -79,4 +79,4 @@
                 (cdr steps)))
     ))
 
-(RS 3 cube3x3alt '("C0A" "F0D"))
+(RS 3 cube3x3alt '("C0A" "C1A"))
