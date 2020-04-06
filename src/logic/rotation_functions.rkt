@@ -1,10 +1,7 @@
-#lang racket
-(require racket/include)
-
-(include "cube_state.rkt")
-(include "basic_functions.rkt")
-(include "test_var.rkt")
-
+;#lang racket
+;(require racket/include)
+;(include "cube_state.rkt")
+;(include "basic_functions.rkt")
 
 ;; ######## Funciones para rotar filas ########
 
@@ -140,8 +137,9 @@
     ))
 
 ;; Función para rotar una cara hacia la izquierda o derecha.
-;; @param left: Boleano que indica hacia que lado rotar
-;; @param face: Cara del cubo a rotar.
+;; @param left: Boleano que indica hacia que lado rotar.
+;; @param index: Índice de la cara a rotar.
+;; @param cube: Estado del cubo.
 (define (rotate_face left index cube)
     (cond 
         ((null? cube) 
@@ -171,16 +169,6 @@
             (apply_rows_list row (sort_lists left (get_all_rows row cube)) cube))
     ))
 
-;; Función para imprimir solo las matrices de un cubo.
-;; @param cube: Cubo a imprimir.
-(define (pc cube)
-    (cond 
-        ((null? cube) 
-            '())
-        (else 
-            (cons (get_face_matrix (car cube)) (pc (cdr cube))))
-    ))
-
 ;; ######## Funciones para rotar columnas ########
 
 ;; Funcion para obtener una columna en cierto indice dado
@@ -193,36 +181,38 @@
         (else 
             (get_column (- i 1) (delete_col matrix)))))
 
-;; Funcion para obtener todas las columnas laterales, segun la columna seleccionada
-;; @param col: indice de la columna a obtener
+;; Funcion para obtener todas las columnas de la posición dada.
+;; @param index: indice de la columna a obtener
+;; @param n: Tamaño del cubo.
 ;; @param cube: Estado del cubo
-(define (get_all_columns col cube)
-    (get_all_columns_aux 4 col cube))
+(define (get_all_cols index n cube)
+    (get_all_cols_aux 4 index n cube))
 
-(define (get_all_columns_aux i col cube)
+(define (get_all_cols_aux i index n cube)
     (cond 
         ((zero? i) 
             '())
-        ((equal? i 4) ; front
+        ((equal? i 4) ;FRONT
             (cons 
-                (get_column col (get_face_matrix (actual_face cube)))
-                (get_all_columns_aux (- i 1) col cube)))
-        ((equal? i 3) ; top
-            (cons
-                (get_column col (get_face_matrix (get_top cube)))
-                (get_all_columns_aux (- i 1) col cube)))
-        ((equal? i 2) ; back
-            (cons
-                (get_column col (get_face_matrix (get_back_of (actual_face cube) cube)))
-                (get_all_columns_aux (- i 1) col cube)))
-        ((equal? i 1) ; bottom
-            (cons
-                (get_column col (get_face_matrix (get_bottom cube)))
-                (get_all_columns_aux (- i 1) col cube)))
-    )
-)
-
-;; ((col_W) (col_O) (col_Y) (col_R))
+                (get_column index 
+                    (get_face_matrix (actual_face cube)))
+                (get_all_cols_aux (- i 1) index n cube)))
+        ((equal? i 3) ;TOP
+            (cons 
+                (get_column index 
+                    (get_face_matrix (get_top cube)))
+                (get_all_cols_aux (- i 1) index n cube)))
+        ((equal? i 2) ;BACK
+            (cons 
+                (get_column (- (- n 1) index) 
+                    (get_face_matrix (get_back_of (actual_face cube) cube)))
+                (get_all_cols_aux (- i 1) index n cube)))
+        ((equal? i 1) ;BOTTOM
+            (cons 
+                (get_column index 
+                    (get_face_matrix (get_bottom cube)))
+                (get_all_cols_aux (- i 1) index n cube)))
+    ))
 
 ;; Funcion para reemplazar una columna
 ;; @param col: indice de la columa
@@ -274,126 +264,53 @@
                 (apply_col_list_aux (- i 1) col columns (cdr cube) n)))
     ))
 
+
 ;; Funcion para cambiar el orden de los elementos de la lista de columnas
 ;; segun hacia donde es el movimiento
-;; @param columns: lista de columnas
-;; @param flag: determina si el movimiento es hacia arriba o abajo, #t arriba #f abajo 
-(define (reverse_columns columns flag)
-    (reverse_columns_aux columns flag 0))
-
-(define (reverse_columns_aux columns flag count)
+;; @param cols: lista de columnas
+;; @param up: determina si el movimiento es hacia arriba o abajo, #t arriba #f abajo 
+(define (prepare_cols cols up)
     (cond 
-        ((null? columns)
+        (up
+            (reverse_cols 0 (last_to_first cols) 2 3))
+        (else
+            (reverse_cols 0 (first_to_last cols) 1 2))
+    ))
+
+;; Función para invertir 2 sublistas dadas de una lista
+;; @param i: Índice inicial.
+;; @param cols: Lista de columnas.
+;; @param c1: Sublista 1 a invertir.
+;; @param c2: Sublista 2 a invertir.
+(define (reverse_cols i cols c1 c2)
+    (cond 
+        ((null? cols) 
             '())
-        ((and flag (equal? count 1)
-            (cons
-                (reverse (car columns))
-                (reverse_columns_aux (cdr columns) flag (+ count 1)))))
-        ((equal? count 2)
+        ((or (equal? i c1) (equal? i c2))
             (cons 
-                (reverse (car columns))
-                (reverse_columns_aux (cdr columns) flag (+ count 1))))
-        ((and (not flag) (equal? count 3))
+                (reverse (car cols))
+                (reverse_cols (+ i 1) (cdr cols) c1 c2)))
+        (else
             (cons
-                (reverse (car columns))
-                (reverse_columns_aux (cdr columns) flag (+ count 1))))
-        (else 
-            (cons 
-                (car columns)
-                (reverse_columns_aux (cdr columns) flag (+ count 1))))
+                (car cols)
+                (reverse_cols (+ i 1) (cdr cols) c1 c2)))
     ))
 
 ;; Funcion para rotar una columna del cubo
+;; @param index: índice de la columna a rotar
+;; @param up: Boleano que indica si la rotación es hacía arriba o abajo. #t es arriba, #f es abajo
 ;; @param n: tamaño del cubo
-;; @param col: índice de la fila a rotar
-;; @param down: Boleano que indica si la rotación es hacía arriba o abajo abajo #t arriba #f
 ;; @param cube: Estado del cubo
-(define (rotate_col n col down cube)
+(define (rotate_col index up n cube)
     (cond 
-        ((zero? col)
-            (rotate_face down 0 
-                (apply_col_list col 
-                    (sort_lists down 
-                        (reverse_columns 
-                            (get_all_columns 0 cube) (not down))) cube n)))
-        ((equal? (- n 1) col)
-            (rotate_face (not down) 2 (apply_col_list col (sort_lists down (reverse_columns (get_all_columns 0 cube) (not down))) cube n)))
-        (else 
-            (apply_col_list col (sort_lists down (reverse_columns (get_all_columns 0 cube) (not down))) cube n))
-    ))
-
-;; Funcion para obtener en una lista la secuencia de un movimiento
-;; @param step: string con el paso a realizar
-(define (get_step_list step)
-    (get_step_list_aux step 0 1))
-
-(define (get_step_list_aux step start end)
-    (cond
-        ((equal? start 3)
-            '())
-        (else 
-            (cons 
-                (substring step start end)
-                (get_step_list_aux step (+ start 1) (+ end 1))))
-    
-    ))
-
-(define (get_dir dir)
-    (cond 
-        ((or (equal? dir "I") (equal? dir "B"))
-            #t)
-        (else #f)
-    ))
-
-;; Filas: I - D -> #t - #f
-;; Columnas: A - B -> #f - #t
-
-
-;; Funcion para realizar un movimiento segun lo indicado
-;; @param mov: Indica si se rota fila o columna.
-;; @param index: Indica el indice de la fila o columna a rotar
-;; @param dir: Direccion del movimiento
-;; @param n: Tamaño del cubo
-;; @param cube: Estado del cubo
-(define (make_movement mov index dir n cube)
-    (cond 
-        ((equal? mov "F") ;Hacer movimiento de filas
-            ;(write dir)
-            (rotate_row n index dir cube))
+        ((zero? index)
+            (rotate_face (not up) 0 
+                (apply_col_list index (prepare_cols (get_all_cols index n cube) up) cube n)
+            ))
+        ((equal? index (- n 1))
+            (rotate_face up 2
+                (apply_col_list index (prepare_cols (get_all_cols index n cube) up) cube n)
+            ))
         (else
-            ;(write dir)
-            (rotate_col n index dir cube)) ; Hacer movimiento de columnas
-    )) 
-
-;; Función que se utiliza para solo procesar los pasos una vez.
-;; @param steps: Lista de pasos calculada.
-;; @param n: Tamaño del cubo.
-;; @param cube: Estado del cubo.
-(define (prepare_movement steps n cube)
-    (make_movement
-        (car steps)
-        (string->number (cadr steps))
-        (get_dir (caddr steps))
-        n
-        cube
+            (apply_col_list index (prepare_cols (get_all_cols index n cube) up) cube n))
     ))
-
-;; Función principal del simulador de cubo Rubik.
-;; @param n: Tamaño del cubo.
-;; @param cube: Estado del cubo.
-;; @param steps: Movimientos a aplicar al cubo.
-(define (RS n cube steps)
-    (cond 
-        ((null? steps)
-            cube)
-        (else
-            (RS
-                n
-                (prepare_movement
-                    (get_step_list (car steps))
-                    n
-                    cube)
-                (cdr steps)))
-    ))
-
-(RS 3 cube3x3alt '("C0A"))
