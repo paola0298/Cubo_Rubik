@@ -70,13 +70,13 @@
 ;; Función para poner el último elemento de una lista de primero.
 ;; @param rows: Lista de filas.
 (define (last_to_first rows)
-    (reverse (first_to_last (reverse rows))))
+    (reverse_list (first_to_last (reverse_list rows))))
 
 ;; Función para darle vuelta a una lista.
-(define (reverse l)
+(define (reverse_list l)
     (cond
         ((null? l) '()) 
-        ((append (reverse (cdr l)) (list (car l))))
+        ((append (reverse_list (cdr l)) (list (car l))))
     ))
 
 ;; Función para aplicar la lista de filas al cubo.
@@ -128,7 +128,7 @@
             '())
         (left 
             (append 
-                (list (reverse (col_to_row matrix)))
+                (list (reverse_list (col_to_row matrix)))
                 (rotate_matrix left (delete_col matrix))))
         (else 
             (append 
@@ -154,6 +154,7 @@
             (cons (car cube) (rotate_face left (- index 1) (cdr cube))))
     ))
 
+
 ;; Función para rotar una fila del cubo.
 ;; @param n: Tamaño del cubo
 ;; @param row: Índice de la fila a rotar.
@@ -176,10 +177,23 @@
 ;; @param matrix: matriz/cara de donde obtener la columna
 (define (get_column i matrix)
     (cond 
-        ((zero? i) 
-            (col_to_row matrix))
+        ((null? matrix)
+            '())
         (else 
-            (get_column (- i 1) (delete_col matrix)))))
+            (cons
+                (get_element_at 0 i (car matrix))
+                (get_column i (cdr matrix))))
+    ))
+(define (get_element_at i index l)
+    (cond 
+        ((null? l) 
+            #f)
+        ((equal? i index)
+            (car l))
+        (else
+            (get_element_at (+ i 1) index (cdr l)))
+    ))
+
 
 ;; Funcion para obtener todas las columnas de la posición dada.
 ;; @param index: indice de la columna a obtener
@@ -218,11 +232,28 @@
 ;; @param col: indice de la columa
 ;; @param new_col: la columna a escribir
 ;; @param matrix: cara donde se escribira la nueva columna
-(define (set_column col new_col matrix)
-    (reverse(rotate_matrix #f
-        (set_row col new_col (rotate_matrix #f matrix)))
-    )
-)
+(define (set_column index col matrix)
+    (cond 
+        ((null? matrix) 
+            '())
+        (else 
+            (cons 
+                (replace_element_at 0 index (car col) (car matrix))
+                (set_column index (cdr col) (cdr matrix))))
+    ))
+(define (replace_element_at i index item l)
+    (cond 
+        ((null? l) 
+            '())
+        ((equal? i index) 
+            (cons 
+                item
+                (replace_element_at (+ i 1) index item (cdr l))))
+        (else 
+            (cons 
+                (car l)
+                (replace_element_at (+ i 1) index item (cdr l))))
+    ))
 
 ;; Funcion para aplicar la lista de columnas al cubo
 ;; @param col: indice de la columna
@@ -288,7 +319,7 @@
             '())
         ((or (equal? i c1) (equal? i c2))
             (cons 
-                (reverse (car cols))
+                (reverse_list (car cols))
                 (reverse_cols (+ i 1) (cdr cols) c1 c2)))
         (else
             (cons
