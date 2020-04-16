@@ -1,85 +1,111 @@
 #lang racket
 (require 
+    racket/include
     pict3d
     pict3d/universe)
 
-(define cube_state
-    '(
-        (#F (("B" "B" "B")
-             ("B" "B" "B")
-             ("B" "B" "B")))
-        (#T (("W" "W" "W")
-             ("W" "W" "W")
-             ("W" "W" "W")))
-        (#F (("G" "G" "G")
-             ("G" "G" "G")
-             ("G" "G" "G")))
-        (#F (("Y" "Y" "Y")
-             ("Y" "Y" "Y")
-             ("Y" "Y" "Y")))
-        (#F (("P" "P" "P")
-             ("P" "P" "P")
-             ("P" "P" "P")))
-        (#F (("O" "O" "O")
-             ("O" "O" "O")
-             ("O" "O" "O")))
-))
-
+(include "../logic/cube_state.rkt")
 
 (current-material 
     (material 
-        #:ambient 0.1
-        #:diffuse 0.39
-        #:specular 0.6
-        #:roughness 0.2))
+        #:ambient 0.5
+        #:diffuse 0.4
+        #:specular 0.1
+        #:roughness 0.5))
 
+;; Cámara de la escena
 (define lights-camera
     (combine 
-        (light (pos 0 1 2) (emitted "white" 7))
-        (light (pos 0 -1 -2) (emitted "white" 7))
-        (basis 'camera (point-at (pos 7 7 6) origin))))
+        (light (pos 5 0 0) (emitted "white" 25))
+        (light (pos 0 5 0) (emitted "white" 25))
+        (light (pos 0 0 5) (emitted "white" 25))
+        (basis 'camera (point-at (pos 5 5 4) origin))))
 
-(define (create-corner x y z)
-    (#F))
-
-(define (create-edge x y z)
-    (#F))
-
-(define (create-center x y z)
-    (#F))
-
-(define (create-row n)
-    (#F))
-
-(define (calc_start_pos n)
-    (list (- 1 n) (- 1 n) (- 1 n)))
-
-(define (combine_list l)
-    (cond 
-        ((null? (cdr l)) 
-            (car l))
-        (else 
-            (combine (car l) (combine_list (cdr l))))
+;; Ejes de coordenadas para referencia
+(define coords
+    (combine
+        (with-color (rgba "red") (arrow origin (pos 0 0 4)))
+        (with-color (rgba "green") (arrow origin (pos 0 4 0)))
+        (with-color (rgba "blue") (arrow origin (pos 4 0 0)))
     ))
 
-(define (start_render n cube movements)
-    (combine_list (start_render_aux (- 1 n) (- 1 n) (- 1 n) n cube movements)))
+;; Variable que define el incremento de coordenadas entre cubo y cubo
+(define coord-step 2);
 
-(define (start_render_aux x y z n cube movements)
-    (cond 
-        ((zero? z) ; Fila 0
-            ())
-        ((equal? (- n 1) z) ; Fila (n - 1) 
-            ())
-        (else   ; Resto de filas
-            ())
+;; Variable para almacenar los cubos base del cubo
+(define base-cube '())
+
+
+;; Funciones para modificar las coordenadas dadas en la dirección especificada
+(define (coord_up coords)
+    (list (car coords) (cadr coords) (+ (caddr coords) coord-step)))
+
+(define (coord_down coords)
+    (list (car coords) (cadr coords) (- (caddr coords) coord-step)))
+
+(define (coord_left coords)
+    (list (+ (car coords) coord-step) (cadr coords) (caddr coords)))
+
+(define (coord_right coords)
+    (list (- (car coords) coord-step) (cadr coords) (caddr coords)))
+
+(define (coord_back coords)
+    (list (car coords) (- (cadr coords) coord-step) (caddr coords)))
+
+(define (coord_front coords)
+    (list (car coords) (+ (cadr coords) coord-step) (caddr coords)))
+
+
+;; Funciones para generar la matriz de coordenadas de cada cara
+(define (gen_top_coords)
+    (#f))
+
+(define (gen_bottom_coords)
+    (#f))
+
+(define (gen_left_coords)
+    (#f))
+
+(define (gen_right_coords)
+    (#f))
+
+(define (gen_back_coords)
+    (#f))
+
+(define (gen_front_coords)
+    (#f))
+
+;; Función para multiplicar las coordenadas dadas por un número dado
+(define (multiply_coords coords multiplier)
+    (list
+        (* (car coords) multiplier)
+        (* (cadr coords) multiplier)
+        (* (caddr coords) multiplier) 
     ))
 
+;; Función para calcular las coordenadas de las caras del cubo
+(define (calculate_faces_coords)
+    (#t))
+
+;; Función que se llama cada cuadro para actualizar los gráficos
 (define (on-draw s n t)
-    (combine 
-        (rotate-z lights-camera (/ t 100))
+    (combine
+        (rotate-z lights-camera (/ t 90))
+        
+        (with-color (rgba "red") (cube (pos 1 1 1) 1))
+        (with-color (rgba "green") (cube (pos -1 -1 1) 1))
+        (with-color (rgba "blue") (cube (pos 1 -1 1) 1))
+        (with-color (rgba "white") (cube (pos -1 1 1) 1))
 
-        (start_render 3 cube_state '())
+        (with-color (rgba "white") (cube (pos 1 1 3) 1))
+        (with-color (rgba "blue") (cube (pos -1 -1 3) 1))
+        (with-color (rgba "green") (cube (pos 1 -1 3) 1))
+        (with-color (rgba "red") (cube (pos -1 1 3) 1))
+
+        (with-color (rgba "red") (arrow origin (pos 0 0 4)))
+        (with-color (rgba "green") (arrow origin (pos 0 4 0)))
+        (with-color (rgba "blue") (arrow origin (pos 4 0 0)))
     ))
 
+;; Llamada a la función principal
 (big-bang3d 0 #:on-draw on-draw)
