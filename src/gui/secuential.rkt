@@ -1,12 +1,12 @@
-#lang racket
-(require
-    racket/include
-    pict3d
-    pict3d/universe)
+;#lang racket
+;(require
+;    racket/include
+;    pict3d
+;    pict3d/universe)
 
-(include "../logic/cube_state.rkt")
-(include "scene_constants.rkt")
-(include "scene_config.rkt")
+;(include "../logic/cube_state.rkt")
+;(include "scene_constants.rkt")
+;(include "scene_config.rkt")
 
 ;; Función que devuelve la coordenada inicial para generar el cubo base.
 ;; @param n: Tamaño del cubo a generar. 
@@ -81,13 +81,13 @@
 (define (update_cube state cube_size delta)
     (cond 
         (update_state
-            (print "___UPDATING___")
+            ;(print "___UPDATING___")
             (set! update_state #F)
             (set! current-state 
                 (gen_base_cube (get_start_coord cube_size) cube_size 0))
             current-state)
         (else 
-            (print "___NOT_UPDATING___")
+            ;(print "___NOT_UPDATING___")
             (set! current-state state)
             current-state)
     ))
@@ -97,7 +97,7 @@
 ;; @param frames: Cuadros transcurridos desde el inicio del programa.
 ;; @param delta: Tiempo transcurrido desde el cuadro anterior en milisegundos.
 (define (on-frame state frames delta)
-    (update_cube state 7 delta))
+    (update_cube state 3 delta))
 
 ;; Función para redibujar lo que muestra la interfaz.
 ;; @param state: Estado actual del cubo.
@@ -111,9 +111,10 @@
     ))
 
 ;; Iniciación del programa
-(big-bang3d 0 
-    #:name "Rubik's simulator" 
-    #:display-mode 'fullscreen
-    #:frame-delay (/ 1000 60)
-    #:on-frame on-frame
-    #:on-draw on-draw)
+
+;(big-bang3d 0 
+;    #:name "Rubik's simulator" 
+;    #:display-mode 'fullscreen
+;    #:frame-delay (/ 1000 60)
+;    #:on-frame on-frame
+;    #:on-draw on-draw)

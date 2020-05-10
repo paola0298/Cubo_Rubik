@@ -1,5 +1,20 @@
 #lang racket/gui
 
+; Se importan las librerías necesarias.
+(require 
+    racket/include
+    pict3d
+    pict3d/universe)
+
+(include "../logic/cube_state.rkt") ; Borrar luego
+
+; Se importa la configuración de las escenas.
+(include "scene_constants.rkt")
+(include "scene_config.rkt")
+; Se importa el modo secuencial.
+(include "secuential.rkt")
+; TODO: Importar modo interactivo.
+
 ;Frame principal donde se colocaran botones para seleccionar el modo
 (define principalFrame(new frame% 
     [label "Menu principal"]
@@ -99,8 +114,8 @@
 (define sizeSlider (new slider%
     [parent sizePanel]
     [label ""]
-    [min-value 1]
-    [max-value 15]
+    [min-value 2]
+    [max-value 8]
     [init-value 3]))
 
 (define initialTextField (new text-field%
@@ -119,10 +134,13 @@
     [min-height 50]
     [style '(multiple)]))
 
-(define (getParameters size initial movements)
+(define (setParameters size initial movements)
     (printf "Size ~a.\n" size)
     (printf "Initial state of cube ~a.\n" initial)
-    (printf "Movements ~a.\n" movements))
+    (printf "Movements ~a.\n" movements)
+    (set! cube-size size)
+    (set! cube-internal-state initial)
+    (set! cube-steps movements))
 
 (define (initSecuencialCallback b e)
     (let ((size (send sizeSlider get-value))
@@ -132,8 +150,13 @@
         (message-box "Error" "Por favor complete todos los campos" secuencialFrame '(stop ok))))
         (else 
             (send secuencialFrame show #f)
-            ;llamar la funcion para mostrar el cubo
-            (getParameters size initialCube movements)
+            (setParameters size initialCube movements)
+            (big-bang3d 0
+                #:name "Rubik's Simulator - Secuencial"
+                #:display-mode 'fullscreen
+                #:frame-delay (/ 1000 60)
+                #:on-frame on-frame
+                #:on-draw on-draw)
             ))))
 
 
@@ -152,8 +175,5 @@
     [label "Modo Manual"]
     [width 700]
     [height 500]))
-
-
-
 
 (send principalFrame show #t)
