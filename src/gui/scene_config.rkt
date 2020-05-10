@@ -20,3 +20,12 @@
 
 ;; Variable que indica si se debe actualizar el estado gráfico del cubo.
 (define update_state #t)
+
+;; Variable para almacenar el tamaño del cubo.
+(define cube-size 3)
+
+;; Variable para almacenar el estado interno del cubo.
+(define cube-internal-state '())
+
+;; Variable para almacenar los movimientos a realizar.
+(define cube-steps '())
