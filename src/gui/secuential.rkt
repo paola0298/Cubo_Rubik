@@ -8,6 +8,15 @@
 ;(include "scene_constants.rkt")
 ;(include "scene_config.rkt")
 
+;; Función para crear las luces y la cámara de la escena actual.
+(define (get_lights+camera)
+    (combine
+        (light (pos (+ cube-size 8) 0 0) (emitted "white" 30))
+        (light (pos 0 (+ cube-size 8) 0) (emitted "white" 30))
+        (light (pos 0 0 (+ cube-size 8)) (emitted "white" 30))
+        (basis 'camera (point-at (pos (+ cube-size 5) (+ cube-size 5) (+ cube-size 2)) origin))
+    ))
+
 ;; Función que devuelve la coordenada inicial para generar el cubo base.
 ;; @param n: Tamaño del cubo a generar. 
 (define (get_start_coord n)
@@ -97,7 +106,7 @@
 ;; @param frames: Cuadros transcurridos desde el inicio del programa.
 ;; @param delta: Tiempo transcurrido desde el cuadro anterior en milisegundos.
 (define (on-frame state frames delta)
-    (update_cube state 3 delta))
+    (update_cube state cube-size delta))
 
 ;; Función para redibujar lo que muestra la interfaz.
 ;; @param state: Estado actual del cubo.
@@ -105,7 +114,8 @@
 ;; @param delta: Tiempo transcurrido desde el último redibujado.
 (define (on-draw state frames delta)
     (combine
-        (rotate-z lights-camera (/ delta 70))
+        ;(rotate-z lights-camera (/ delta 70))
+        (rotate-z (get_lights+camera) (/ delta 70))
         coords
         current-state
     ))

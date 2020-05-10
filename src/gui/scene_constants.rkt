@@ -1,12 +1,12 @@
 
 
 ;; Cámara de la escena
-(define lights-camera
-    (combine 
-        (light (pos 20 0 0) (emitted "white" 50))
-        (light (pos 0 20 0) (emitted "white" 50))
-        (light (pos 0 0 20) (emitted "white" 50))
-        (basis 'camera (point-at (pos 14 14 14) origin))))
+;(define lights-camera
+;    (combine 
+;        (light (pos 20 0 0) (emitted "white" 50))
+;        (light (pos 0 20 0) (emitted "white" 50))
+;        (light (pos 0 0 20) (emitted "white" 50))
+;        (basis 'camera (point-at (pos 14 14 14) origin))))
 
 ;; Ejes de coordenadas para referencia
 (define coords
