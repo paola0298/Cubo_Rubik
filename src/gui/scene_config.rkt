@@ -9,6 +9,9 @@
 ;; Variable que define el incremento de coordenadas entre cubo y cubo
 (define coord-step 2);
 
+;; Variable que define el incremento de coordenadas entre el cubo de color y el cubo base
+(define coord-step-color 0.2);
+
 ;; Variable que define el tamaño por defecto de los cubo base
 (define base-cube-size 0.96)
 
@@ -29,3 +32,27 @@
 
 ;; Variable para almacenar los movimientos a realizar.
 (define cube-steps '())
+
+
+(define cube_prueba
+    '(
+        (#F (("B1" "B1" "B1")
+             ("B2" "B2" "B2")
+             ("B3" "B3" "B3")))
+        (#T (("W1" "W1" "W1")
+             ("W2" "W2" "W2")
+             ("W3" "W3" "W3")))
+        (#F (("G1" "G1" "G1")
+             ("G2" "G2" "G2")
+             ("G3" "G3" "G3")))
+        (#F (("Y1" "Y1" "Y1")
+             ("Y2" "Y2" "Y2")
+             ("Y3" "Y3" "Y3")))
+        (#F (("P1" "P1" "P1")
+             ("P2" "P2" "P2")
+             ("P3" "P3" "P3")))
+        (#F (("O1" "O1" "O1")
+             ("O2" "O2" "O2")
+             ("O3" "O3" "O3")))
+    )
+)
