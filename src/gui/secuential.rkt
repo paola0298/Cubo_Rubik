@@ -1,12 +1,12 @@
-;#lang racket
-;(require
-;    racket/include
-;    pict3d
-;    pict3d/universe)
-
-;(include "../logic/cube_state.rkt")
-;(include "scene_constants.rkt")
-;(include "scene_config.rkt")
+#lang racket
+(require
+    racket/include
+    pict3d
+    pict3d/universe)
+    
+(include "../logic/cube_state.rkt")
+(include "scene_constants.rkt")
+(include "scene_config.rkt")
 
 ;; Función para crear las luces y la cámara de la escena actual.
 (define (get_lights+camera)
@@ -14,7 +14,7 @@
         (light (pos (+ cube-size 8) 0 0) (emitted "white" 30))
         (light (pos 0 (+ cube-size 8) 0) (emitted "white" 30))
         (light (pos 0 0 (+ cube-size 8)) (emitted "white" 30))
-        (basis 'camera (point-at (pos (+ cube-size 5) (+ cube-size 5) (+ cube-size 2)) origin))
+        (basis 'camera (point-at (pos (+ cube-size 1) (+ cube-size 8) (+ cube-size 1)) origin))
     ))
 
 ;; Función que devuelve la coordenada inicial para generar el cubo base.
@@ -89,17 +89,18 @@
 ;; @param delta: Tiempo transcurrido desde el cuadro anterior en milisegundos.
 (define (update_cube state cube_size delta)
     (cond 
+        ; Actualizar el estado del cubo.
         (update_state
-            ;(print "___UPDATING___")
             (set! update_state #F)
             (set! current-state 
                 (gen_base_cube (get_start_coord cube_size) cube_size 0))
             current-state)
-        (else 
-            ;(print "___NOT_UPDATING___")
+        ; No actualizar el estado del cubo.
+        (else
             (set! current-state state)
             current-state)
     ))
+
 
 ;; Función que se llama cada cuadro para generar un nuevo estado.
 ;; @param state: Estado anterior del cubo.
@@ -114,17 +115,14 @@
 ;; @param delta: Tiempo transcurrido desde el último redibujado.
 (define (on-draw state frames delta)
     (combine
-        ;(rotate-z lights-camera (/ delta 70))
-        (rotate-z (get_lights+camera) (/ delta 70))
         coords
+        (get_lights+camera)
         current-state
     ))
 
-;; Iniciación del programa
-
-;(big-bang3d 0 
-;    #:name "Rubik's simulator" 
-;    #:display-mode 'fullscreen
-;    #:frame-delay (/ 1000 60)
-;    #:on-frame on-frame
-;    #:on-draw on-draw)
+(big-bang3d 0
+    #:name "Rubik's Simulator - Secuencial"
+    #:display-mode 'fullscreen
+    #:frame-delay (/ 1000 60)
+    #:on-frame on-frame
+    #:on-draw on-draw)
