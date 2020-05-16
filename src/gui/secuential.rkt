@@ -1,13 +1,3 @@
-#lang racket
-(require
-    racket/include
-    pict3d
-    pict3d/universe)
-    
-(include "../logic/cube_state.rkt")
-(include "scene_constants.rkt")
-(include "scene_config.rkt")
-
 ;; Función para crear las luces y la cámara de la escena actual.
 (define (get_lights+camera)
     (combine
@@ -59,8 +49,6 @@
     (list (car coords) (- (cadr coords) coord-step-color) (caddr coords)))
 (define (coord_front_color coords)
     (list (car coords) (+ (cadr coords) coord-step-color) (caddr coords)))
-
-
 
 ;; Funcion para obtener la letra del color del cubo
 ;; @param word: letra del color
@@ -266,37 +254,6 @@
 ;; @param n: Tamaño del cubo.
 ;; @param i: Contador.
 ;; @param cube: Estado interno del cubo.
-
-(define (gen_color_cube i n cube)
-    (cond 
-        ((equal? i 6) '())
-        ((equal? i 0)
-            (cons
-                (gen_color_col_0 (coord_left_color(coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube))
-                (gen_color_cube (+ i 1) n (cdr cube))))
-        ((equal? i 1)
-            (cons
-                (gen_color_col_1 (coord_front_color (get_opp_coord n)) n 0 (cadar cube))
-                (gen_color_cube (+ i 1) n (cdr cube))))
-        ((equal? i 2)
-            (cons 
-                (gen_color_col_2 (coord_right_color (coord_right (coord_right (get_opp_coord n)))) n 0 (cadar cube))
-                (gen_color_cube (+ i 1) n (cdr cube))))
-        ((equal? i 3)
-            (cons 
-                (gen_color_col_3 (coord_back_color (coord_up (coord_up (get_start_coord n)))) n 0 (cadar cube))
-                (gen_color_cube (+ i 1) n (cdr cube))))
-        ((equal? i 4)
-            (cons
-                (gen_color_col_4 (coord_up_color (coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube))
-                (gen_color_cube (+ i 1) n (cdr cube))))
-        ((equal? i 5)
-            (cons 
-                (gen_color_col_5 (coord_down_color (coord_down (coord_down (get_opp_coord n)))) n 0 (cadar cube))
-                (gen_color_cube (+ i 1) n (cdr cube))))
-            
-    ))
-
 (define (gen_color_cube_2 i n cube)
     (append
         (gen_color_col_0 (coord_left_color(coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube)) ;funciona
@@ -306,6 +263,7 @@
         (gen_color_col_4 (coord_up_color (coord_back (coord_back (get_opp_coord n)))) n 0 (cadar (cddddr cube)))
         (gen_color_col_5 (coord_down_color (coord_down (coord_down (get_opp_coord n)))) n 0 (cadar (cdr (cddddr cube3x3))))
     ))
+
 ;; Función que actualiza el estado del cubo dependiendo del estado anterior.
 ;; @param state: Estado anterior del cubo.
 ;; @param cube_size: Tamaño del cubo.
@@ -329,7 +287,6 @@
             current-state)
     ))
 
-
 ;; Función que se llama cada cuadro para generar un nuevo estado.
 ;; @param state: Estado anterior del cubo.
 ;; @param frames: Cuadros transcurridos desde el inicio del programa.
@@ -344,13 +301,6 @@
 (define (on-draw state frames delta)
     (combine
         coords
-        (get_lights+camera)
+        (rotate-z (get_lights+camera) (/ delta 50))
         current-state
     ))
-
-(big-bang3d 0
-    #:name "Rubik's Simulator - Secuencial"
-    #:display-mode 'fullscreen
-    #:frame-delay (/ 1000 60)
-    #:on-frame on-frame
-    #:on-draw on-draw)
