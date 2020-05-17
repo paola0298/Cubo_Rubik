@@ -1,8 +1,3 @@
-;#lang racket
-;(require racket/include)
-;(include "cube_state.rkt")
-;(include "basic_functions.rkt")
-
 ;; ######## Funciones para rotar filas ########
 
 ;; Función para obtener una fila de una cara.
