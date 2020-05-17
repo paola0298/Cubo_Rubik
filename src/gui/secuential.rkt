@@ -1,3 +1,5 @@
+(current-pict3d-background (rgba "white"))
+
 ;; Función para crear las luces y la cámara de la escena actual.
 (define (get_lights+camera)
     (combine
@@ -256,7 +258,7 @@
 ;; @param cube: Estado interno del cubo.
 (define (gen_color_cube_2 i n cube)
     (append
-        (gen_color_col_0 (coord_left_color(coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube)) ;funciona
+        (gen_color_col_0 (coord_left_color (coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube)) ;funciona
         (gen_color_col_1 (coord_front_color (get_opp_coord n)) n 0 (cadadr cube))
         (gen_color_col_2 (coord_right_color (coord_right (coord_right (get_opp_coord n)))) n 0 (cadar(cddr cube)))
         (gen_color_col_3 (coord_back_color (coord_up (coord_up (get_start_coord n)))) n 0 (cadar(cdddr cube)))
