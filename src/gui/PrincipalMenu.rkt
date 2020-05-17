@@ -163,7 +163,7 @@
             (setParameters size initialCube movements)
             (big-bang3d empty-pict3d
                 #:name "Rubik's Simulator - Secuencial"
-                #:display-mode 'fullscreen
+                ;#:display-mode 'fullscreen
                 #:frame-delay (/ 1000 60)
                 #:on-frame on-frame
                 #:on-draw on-draw)

@@ -256,6 +256,37 @@
 ;; @param n: Tamaño del cubo.
 ;; @param i: Contador.
 ;; @param cube: Estado interno del cubo.
+
+(define (gen_color_cube i n cube)
+    (cond 
+        ((equal? i 6) '())
+        ((equal? i 0)
+            (cons
+                (gen_color_col_0 (coord_left_color(coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 1)
+            (cons
+                (gen_color_col_1 (coord_front_color (get_opp_coord n)) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 2)
+            (cons 
+                (gen_color_col_2 (coord_right_color (coord_right (coord_right (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 3)
+            (cons 
+                (gen_color_col_3 (coord_back_color (coord_up (coord_up (get_start_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 4)
+            (cons
+                (gen_color_col_4 (coord_up_color (coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 5)
+            (cons 
+                (gen_color_col_5 (coord_down_color (coord_down (coord_down (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+            
+    ))
+
 (define (gen_color_cube_2 i n cube)
     (append
         (gen_color_col_0 (coord_left_color (coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube)) ;funciona
@@ -277,7 +308,7 @@
             (set! current-state
                 (list
                     (gen_base_cube (get_start_coord size) size 0)
-                    (gen_color_cube_2 0 size cube-internal-state) 
+                    (gen_color_cube 0 size cube-internal-state) 
                 ))
             current-state)
         (else

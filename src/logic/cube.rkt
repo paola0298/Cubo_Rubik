@@ -1,6 +1,6 @@
 ;#lang racket
 
-(define mov '("C0B" "F1I" "C2A"))
+(define mov '("C0B" "F1I" "C2A")) 
 
 
 ;(substring "C1A" 0 1)
