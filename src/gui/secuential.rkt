@@ -1,3 +1,22 @@
+;; FOR TESTING
+#lang racket
+(require 
+    racket/include
+    pict3d
+    pict3d/universe)
+(include "../logic/cube_state.rkt")
+(include "../logic/basic_functions.rkt")
+(include "../logic/rotation_functions.rkt")
+(include "../logic/main_functions.rkt")
+(include "scene_config.rkt")
+(include "scene_constants.rkt")
+
+;; TEST VARIABLES
+(set! cube-size 2)
+(set! cube-internal-state cube2x2)
+(set! cube-steps '("C0A" "F0D"))
+
+
 (current-pict3d-background (rgba "white"))
 
 ;; Función para crear las luces y la cámara de la escena actual.
@@ -13,6 +32,18 @@
 ;; @param n: Tamaño del cubo a generar. 
 (define (get_start_coord n)
     (list (- 1 n) (- 1 n) (- 1 n)))
+
+;; Funciones para obtener las coordenadas de las esquinas del cubo.
+(define (get_coord_top_front_right n)
+    (list (- 1 n) (- n 1) (- n 1)))
+(define (get_coord_top_front_left n)
+    (list (- n 1) (- n 1) (- n 1)))
+(define (get_coord_top_back_left n)
+    (list (- n 1) (- 1 n) (- n 1)))
+(define (get_coord_bottom_front_left n)
+    (list (- n 1) (- n 1) (- 1 n)))
+(define (get_coord_top_back_right n)
+    (list (- 1 n) (- 1 n) (- n 1)))
 
 ;; Función que devuelve la coordenada opuesta a la inicial para generar el cubo.
 ;; @param n: Tamaño del cubo.
@@ -266,6 +297,36 @@
         (gen_color_col_5 (coord_down_color (coord_down (coord_down (get_opp_coord n)))) n 0 (cadar (cdr (cddddr cube3x3))))
     ))
 
+(define (gen_color_cube i n cube)
+    (cond 
+        ((equal? i 6) '())
+        ((equal? i 0)
+            (cons
+                (gen_color_col_0 (coord_left_color(coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 1)
+            (cons
+                (gen_color_col_1 (coord_front_color (get_opp_coord n)) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 2)
+            (cons 
+                (gen_color_col_2 (coord_right_color (coord_right (coord_right (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 3)
+            (cons 
+                (gen_color_col_3 (coord_back_color (coord_up (coord_up (get_start_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 4)
+            (cons
+                (gen_color_col_4 (coord_up_color (coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+        ((equal? i 5)
+            (cons 
+                (gen_color_col_5 (coord_down_color (coord_down (coord_down (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_cube (+ i 1) n (cdr cube))))
+            
+    ))
+
 ;; Función que actualiza el estado del cubo dependiendo del estado anterior.
 ;; @param state: Estado anterior del cubo.
 ;; @param cube_size: Tamaño del cubo.
@@ -277,7 +338,7 @@
             (set! current-state
                 (list
                     (gen_base_cube (get_start_coord size) size 0)
-                    (gen_color_cube_2 0 size cube-internal-state) 
+                    (gen_color_cube 0 size cube-internal-state) 
                 ))
             current-state)
         (else
@@ -360,3 +421,11 @@
         )
         current-state
     ))
+
+;; FOR TESTING
+(big-bang3d empty-pict3d
+                #:name "Rubik's Simulator - Secuencial"
+                #:display-mode 'fullscreen
+                #:frame-delay (/ 1000 60)
+                #:on-frame on-frame
+                #:on-draw on-draw)
