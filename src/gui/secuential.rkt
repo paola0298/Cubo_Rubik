@@ -4,7 +4,7 @@
         (light (pos (+ cube-size 8) 0 0) (emitted "white" 30))
         (light (pos 0 (+ cube-size 8) 0) (emitted "white" 30))
         (light (pos 0 0 (+ cube-size 8)) (emitted "white" 30))
-        (basis 'camera (point-at (pos (+ cube-size 1) (+ cube-size 8) (+ cube-size 1)) origin))
+        (basis 'camera (point-at (pos (+ cube-size 2) (+ cube-size 8) (+ cube-size 2)) origin))
     ))
 
 ;; Función que devuelve la coordenada inicial para generar el cubo base.
@@ -63,7 +63,7 @@
         ((equal? color "B") "blue")
         ((equal? color "Y") "yellow")
         ((equal? color "G") "green")
-        ((equal? color "P") "pink")
+        ((equal? color "P") "red")
         ((equal? color "O") "orange")
         ((equal? color "R") "red")
     ))
@@ -268,23 +268,64 @@
 ;; @param state: Estado anterior del cubo.
 ;; @param cube_size: Tamaño del cubo.
 ;; @param delta: Tiempo transcurrido desde el cuadro anterior en milisegundos.
-;; cube-internal-state, variable que almacena el estado del cubo
-(define (update_cube state cube_size delta)
+(define (update_cube state size delta)
     (cond 
-        ; Actualizar el estado del cubo.
         (update_state
             (set! update_state #F)
-            (set! current-state 
-                (combine
-                    (gen_base_cube (get_start_coord cube_size) cube_size 0)
-                    (gen_color_cube_2 0 cube-size cube_prueba) 
-                    ;(gen_color_col_1 (coord_front_color(get_opp_coord cube-size)) cube-size 0 '(("W1" "W1" "W1")("W2" "W2" "W2")("W3" "W3" "W3")))
+            (set! current-state
+                (list
+                    (gen_base_cube (get_start_coord size) size 0)
+                    (gen_color_cube_2 0 size cube-internal-state) 
                 ))
             current-state)
-        ; No actualizar el estado del cubo.
         (else
-            (set! current-state state)
             current-state)
+    ))
+
+;; Función para verificar el estado lógico del programa y modificarlo según sea necesario
+;; @param delta: Tiempo desde el inicio del programa.
+(define (check-state delta)
+    (cond
+        ((equal? logic-state 0) ; do-step
+            (cond 
+                ((null? cube-steps)
+                    (set! program-done #T)
+                    current-state)
+                (else 
+                    (set! logic-state 1)
+                    (set! cube-internal-state 
+                    (do-step (car cube-steps) cube-size cube-internal-state))
+                    (set! cube-steps (cdr cube-steps))
+                    current-state)
+            ))
+        ((equal? logic-state 1) ; rotating => actualizar cubo |NO IMPLEMENTADO|
+            (cond
+                ((> 0 animation-duration)
+                    (set! animation-duration 40.0)
+                    (set! logic-state 2)
+                    current-state)
+                (else
+                    (set! animation-duration (- animation-duration 1.0))
+                    ;Seleccionar fila o columna de rotación y rotar por la variable de ángulo.
+                    current-state)
+            )
+            current-state)
+        ((equal? logic-state 2) ; step-done
+            (set! logic-state 3)
+            (set! rotation-angle 0)
+            (set! update_state #T)
+            (update_cube current-state cube-size delta)
+            current-state)
+        ((equal? logic-state 3) ; delay-time
+            (cond
+                ((>= 0 step-wait-time)
+                    (set! step-wait-time 15.0)
+                    (set! logic-state 0)
+                    current-state)
+                (else
+                    (set! step-wait-time (- step-wait-time 1))
+                    current-state)
+            ))
     ))
 
 ;; Función que se llama cada cuadro para generar un nuevo estado.
@@ -292,7 +333,14 @@
 ;; @param frames: Cuadros transcurridos desde el inicio del programa.
 ;; @param delta: Tiempo transcurrido desde el cuadro anterior en milisegundos.
 (define (on-frame state frames delta)
-    (update_cube state cube-size delta))
+    (cond
+        (program-done
+            current-state)
+        ((null? current-state)
+            (update_cube state cube-size delta))
+        (else 
+            (check-state delta)) 
+    ))
 
 ;; Función para redibujar lo que muestra la interfaz.
 ;; @param state: Estado actual del cubo.
@@ -301,6 +349,12 @@
 (define (on-draw state frames delta)
     (combine
         coords
-        (rotate-z (get_lights+camera) (/ delta 50))
+        (cond 
+            (program-done
+                (set! camera-rotation (+ camera-rotation 0.5))
+                (rotate-z (get_lights+camera) camera-rotation))
+            (else 
+                (rotate-z (get_lights+camera) camera-rotation))
+        )
         current-state
     ))
