@@ -8,12 +8,22 @@
 
 (include "../logic/cube_state.rkt") ; Borrar luego
 
-; Se importa la configuración de las escenas.
-(include "scene_constants.rkt")
+;; Se importan las funciones básicas de rotación
+(include "../logic/basic_functions.rkt")
+(include "../logic/rotation_functions.rkt")
+
+;; Se importan las funciones lógicas principales
+(include "../logic/main_functions.rkt")
+
+;; Se importa la configuración de las escenas.
 (include "scene_config.rkt")
+(include "scene_constants.rkt")
+
 ; Se importa el modo secuencial.
 (include "secuential.rkt")
-; TODO: Importar modo interactivo.
+
+(define (convert str)
+    (with-input-from-string str read))
 
 ;Frame principal donde se colocaran botones para seleccionar el modo
 (define principalFrame(new frame% 
@@ -139,8 +149,8 @@
     (printf "Initial state of cube ~a.\n" initial)
     (printf "Movements ~a.\n" movements)
     (set! cube-size size)
-    (set! cube-internal-state initial)
-    (set! cube-steps movements))
+    (set! cube-internal-state (convert initial))
+    (set! cube-steps (convert movements)))
 
 (define (initSecuencialCallback b e)
     (let ((size (send sizeSlider get-value))
@@ -151,9 +161,9 @@
         (else 
             (send secuencialFrame show #f)
             (setParameters size initialCube movements)
-            (big-bang3d 0
+            (big-bang3d empty-pict3d
                 #:name "Rubik's Simulator - Secuencial"
-                ;#:display-mode 'fullscreen
+                #:display-mode 'fullscreen
                 #:frame-delay (/ 1000 60)
                 #:on-frame on-frame
                 #:on-draw on-draw)
