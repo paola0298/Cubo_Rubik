@@ -2,9 +2,14 @@
 
 ;; ##### Variables de animación #####
 ;; Variable que define el tiempo que transcurre entre los pasos
-(define step-wait-time 15.0)
+(define step-default-time 250.0)
+(define step-wait-time step-default-time)
 ;; Variable que define la duración de la animación de un paso
-(define animation-duration 40.0)
+(define animation-default-time 500.0)
+(define animation-duration animation-default-time)
+
+(define delta-time 0.0)
+(define prev-time 0.0)
 
 ;; ##### Variables de configuración #####
 ;; Variable que define el incremento de coordenadas entre cubo y cubo

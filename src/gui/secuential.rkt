@@ -12,12 +12,11 @@
 (include "scene_constants.rkt")
 
 ;; TEST VARIABLES
-(set! cube-size 15)
-(set! cube-internal-state cube15x15)
-(set! cube-steps '("C0A" "F0D" "F3I" "C3A" "C5B"))
+(set! cube-size 3)
+(set! cube-internal-state cube3x3)
+(set! cube-steps '("C0A" "F0D" "F1I" "C1A"))
 
-
-(current-pict3d-background (rgba "white"))
+(current-pict3d-background (rgba "gray"))
 
 ;; Función para crear las luces y la cámara de la escena actual.
 (define (get_lights+camera)
@@ -345,9 +344,14 @@
             current-state)
     ))
 
+(define (get-delta t1 t2)
+    (abs (- t2 t1)))
+
 ;; Función para verificar el estado lógico del programa y modificarlo según sea necesario
 ;; @param delta: Tiempo desde el inicio del programa.
 (define (check-state delta)
+    (set! delta-time (get-delta prev-time delta))
+    (set! prev-time delta)
     (cond
         ((equal? logic-state 0) ; do-step
             (cond 
@@ -364,11 +368,11 @@
         ((equal? logic-state 1) ; rotating => actualizar cubo |NO IMPLEMENTADO|
             (cond
                 ((> 0 animation-duration)
-                    (set! animation-duration 40.0)
+                    (set! animation-duration animation-default-time)
                     (set! logic-state 2)
                     current-state)
                 (else
-                    (set! animation-duration (- animation-duration 1.0))
+                    (set! animation-duration (- animation-duration delta-time))
                     ;Seleccionar fila o columna de rotación y rotar por la variable de ángulo.
                     current-state)
             )
@@ -382,11 +386,11 @@
         ((equal? logic-state 3) ; delay-time
             (cond
                 ((>= 0 step-wait-time)
-                    (set! step-wait-time 15.0)
+                    (set! step-wait-time step-default-time)
                     (set! logic-state 0)
                     current-state)
                 (else
-                    (set! step-wait-time (- step-wait-time 1))
+                    (set! step-wait-time (- step-wait-time delta-time))
                     current-state)
             ))
     ))
@@ -414,7 +418,9 @@
         coords
         (cond 
             (program-done
-                (set! camera-rotation (+ camera-rotation 0.5))
+                (set! delta-time (get-delta prev-time delta))
+                (set! prev-time delta)
+                (set! camera-rotation (+ camera-rotation (/ delta-time 20)))
                 (rotate-z (get_lights+camera) camera-rotation))
             (else 
                 (rotate-z (get_lights+camera) camera-rotation))
@@ -425,7 +431,7 @@
 ;; FOR TESTING
 (big-bang3d empty-pict3d
                 #:name "Rubik's Simulator - Secuencial"
-                ;#:display-mode 'fullscreen
+                #:display-mode 'fullscreen
                 #:frame-delay (/ 1000 60)
                 #:on-frame on-frame
                 #:on-draw on-draw)
