@@ -43,4 +43,4 @@
 ;; Variable para almacenar el estado interno del cubo.
 (define cube-internal-state '())
 ;; Variable para almacenar los movimientos a realizar.
-(define cube-steps '("C0B" "F1I" "C2A" "C0B" "F2D"))
+(define cube-steps '())

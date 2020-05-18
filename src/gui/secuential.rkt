@@ -1,21 +1,3 @@
-;; FOR TESTING
-#lang racket
-(require 
-    racket/include
-    pict3d
-    pict3d/universe)
-(include "../logic/cube_state.rkt")
-(include "../logic/basic_functions.rkt")
-(include "../logic/rotation_functions.rkt")
-(include "../logic/main_functions.rkt")
-(include "scene_config.rkt")
-(include "scene_constants.rkt")
-
-;; TEST VARIABLES
-(set! cube-size 3)
-(set! cube-internal-state cube3x3)
-(set! cube-steps '("C0A" "F0D" "F1I" "C1A"))
-
 (current-pict3d-background (rgba "gray"))
 
 ;; Función para crear las luces y la cámara de la escena actual.
@@ -427,11 +409,3 @@
         )
         current-state
     ))
-
-;; FOR TESTING
-(big-bang3d empty-pict3d
-                #:name "Rubik's Simulator - Secuencial"
-                #:display-mode 'fullscreen
-                #:frame-delay (/ 1000 60)
-                #:on-frame on-frame
-                #:on-draw on-draw)
