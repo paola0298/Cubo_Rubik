@@ -397,7 +397,7 @@
 ;; @param delta: Tiempo transcurrido desde el último redibujado.
 (define (on-draw state frames delta)
     (combine
-        coords
+        ;coords
         (cond 
             (program-done
                 (set! delta-time (get-delta prev-time delta))
