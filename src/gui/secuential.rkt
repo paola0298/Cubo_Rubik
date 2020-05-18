@@ -12,9 +12,9 @@
 (include "scene_constants.rkt")
 
 ;; TEST VARIABLES
-(set! cube-size 2)
-(set! cube-internal-state cube2x2)
-(set! cube-steps '("C0A" "F0D"))
+(set! cube-size 15)
+(set! cube-internal-state cube15x15)
+(set! cube-steps '("C0A" "F0D" "F3I" "C3A" "C5B"))
 
 
 (current-pict3d-background (rgba "white"))
@@ -302,27 +302,27 @@
         ((equal? i 6) '())
         ((equal? i 0)
             (cons
-                (gen_color_col_0 (coord_left_color(coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_col_0 (coord_left_color(get_coord_top_back_left n)) n 0 (cadar cube))
                 (gen_color_cube (+ i 1) n (cdr cube))))
         ((equal? i 1)
             (cons
-                (gen_color_col_1 (coord_front_color (get_opp_coord n)) n 0 (cadar cube))
+                (gen_color_col_1 (coord_front_color (get_coord_top_front_left n)) n 0 (cadar cube))
                 (gen_color_cube (+ i 1) n (cdr cube))))
         ((equal? i 2)
             (cons 
-                (gen_color_col_2 (coord_right_color (coord_right (coord_right (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_col_2 (coord_right_color (get_coord_top_front_right n)) n 0 (cadar cube))
                 (gen_color_cube (+ i 1) n (cdr cube))))
         ((equal? i 3)
             (cons 
-                (gen_color_col_3 (coord_back_color (coord_up (coord_up (get_start_coord n)))) n 0 (cadar cube))
+                (gen_color_col_3 (coord_back_color (get_coord_top_back_right n)) n 0 (cadar cube))
                 (gen_color_cube (+ i 1) n (cdr cube))))
         ((equal? i 4)
             (cons
-                (gen_color_col_4 (coord_up_color (coord_back (coord_back (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_col_4 (coord_up_color (get_coord_top_back_left n)) n 0 (cadar cube))
                 (gen_color_cube (+ i 1) n (cdr cube))))
         ((equal? i 5)
             (cons 
-                (gen_color_col_5 (coord_down_color (coord_down (coord_down (get_opp_coord n)))) n 0 (cadar cube))
+                (gen_color_col_5 (coord_down_color (get_coord_bottom_front_left n)) n 0 (cadar cube))
                 (gen_color_cube (+ i 1) n (cdr cube))))
             
     ))
@@ -425,7 +425,7 @@
 ;; FOR TESTING
 (big-bang3d empty-pict3d
                 #:name "Rubik's Simulator - Secuencial"
-                #:display-mode 'fullscreen
+                ;#:display-mode 'fullscreen
                 #:frame-delay (/ 1000 60)
                 #:on-frame on-frame
                 #:on-draw on-draw)
