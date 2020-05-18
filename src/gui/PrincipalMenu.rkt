@@ -36,8 +36,8 @@
 (define panelH (new vertical-panel% 
     [parent principalFrame]
     [horiz-margin 15]
-    [vert-margin 15]
-    [spacing 10]))
+    [vert-margin 20]
+    [spacing 40]))
 
 (define welcomeMessage (new message% 
     [parent panelH]
@@ -49,12 +49,12 @@
     [min-width 150]
     [min-height 100]
     [font (make-object font% 25 'default 'normal 'bold)]
-    [label "Modo Secuencial"]
+    [label "Iniciar simulación"]
     [callback (lambda (button event)
             (send secuencialFrame show #t)
             (send principalFrame show #f))]))
 
-
+#|
 (define Manualbutton (new button%
     [parent panelH]
     [min-width 150]
@@ -64,7 +64,7 @@
     [callback (lambda (button event)
             (send ManualFrame show #t)
             (send principalFrame show #f))]))
-
+|#
 
 ;Vista de menu de modo secuencial
 ;Frame donde iran todos los widgets
@@ -125,7 +125,7 @@
     [parent sizePanel]
     [label ""]
     [min-value 2]
-    [max-value 8]
+    [max-value 15]
     [init-value 3]))
 
 (define initialTextField (new text-field%
@@ -179,11 +179,11 @@
     [callback initSecuencialCallback]))
 
 
-
+#|
 ;Vista de modo manual
 (define ManualFrame (new frame%
     [label "Modo Manual"]
     [width 700]
     [height 500]))
-
+|#
 (send principalFrame show #t)
