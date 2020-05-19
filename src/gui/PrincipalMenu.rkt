@@ -1,12 +1,13 @@
 #lang racket/gui
 
-; Se importan las librerías necesarias.
+;; Se importan las librerías necesarias.
 (require 
     racket/include
     pict3d
     pict3d/universe)
 
-(include "../logic/cube_state.rkt") ; Borrar luego
+;; Se importan estados de cubo de ejemplo.
+(include "../logic/cube_state.rkt")
 
 ;; Se importan las funciones básicas de rotación
 (include "../logic/basic_functions.rkt")
@@ -16,14 +17,27 @@
 (include "../logic/main_functions.rkt")
 
 ;; Se importa la configuración de las escenas.
-(include "scene_config.rkt")
-(include "scene_constants.rkt")
+(include "general_config.rkt")
+(include "secuential_config.rkt")
+(include "interactive_config.rkt")
 
-; Se importa el modo secuencial.
+;; Se importan las funciones de renderizado.
+(include "render_functions.rkt")
+
+;; Se importa el modo secuencial.
 (include "secuential.rkt")
+;; Se importa el modo interactivo.
+(include "interactive.rkt")
 
+;; Función para convertir un string de una lista a una lista.
+;; @param str: String a convertir a lista.
 (define (convert str)
     (with-input-from-string str read))
+
+;; Función para verificar si un string es numérico.
+;; @param s: String a verificar.
+(define (string-numeric? s) 
+    (string->number s))
 
 ;Frame principal donde se colocaran botones para seleccionar el modo
 (define principalFrame(new frame% 
@@ -44,17 +58,18 @@
     [label "Bienvenido a Rubik Simulator!"]
     [font (make-object font% 25 'default 'normal 'bold)]))
 
+;; TODO: renombrar a secuencial cuando el modo interactivo esté listo
 (define Secuencialbutton (new button%
     [parent panelH]
     [min-width 150]
     [min-height 100]
     [font (make-object font% 25 'default 'normal 'bold)]
-    [label "Iniciar simulación"]
+    [label "Modo secuencial"]
     [callback (lambda (button event)
             (send secuencialFrame show #t)
             (send principalFrame show #f))]))
 
-#|
+
 (define Manualbutton (new button%
     [parent panelH]
     [min-width 150]
@@ -62,9 +77,19 @@
     [font (make-object font% 25 'default 'normal 'bold)]
     [label "Modo Manual"]
     [callback (lambda (button event)
-            (send ManualFrame show #t)
-            (send principalFrame show #f))]))
-|#
+            ;(send ManualFrame show #t)
+            (send principalFrame show #f)
+            (set! cube-size 3)
+            (set! cube-internal-state cube3x3)
+            (big-bang3d empty-pict3d
+                #:name "Rubik's Simulator - Interactivo"
+                ;#:display-mode 'fullscreen
+                #:frame-delay (/ 1000 60)
+                #:on-frame on-frame-interactive
+                #:on-key on-key-interactive
+                #:on-draw on-draw-interactive)
+            )]))
+
 
 ;Vista de menu de modo secuencial
 ;Frame donde iran todos los widgets
@@ -165,8 +190,8 @@
                 #:name "Rubik's Simulator - Secuencial"
                 #:display-mode 'fullscreen
                 #:frame-delay (/ 1000 60)
-                #:on-frame on-frame
-                #:on-draw on-draw)
+                #:on-frame on-frame-secuential
+                #:on-draw on-draw-secuential)
             ))))
 
 
@@ -179,11 +204,11 @@
     [callback initSecuencialCallback]))
 
 
-#|
+
 ;Vista de modo manual
 (define ManualFrame (new frame%
     [label "Modo Manual"]
     [width 700]
     [height 500]))
-|#
+
 (send principalFrame show #t)
