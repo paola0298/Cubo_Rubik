@@ -1,4 +1,4 @@
-;; ######## Funciones para rotar filas ########
+ ;; ######## Funciones para rotar filas ########
 
 ;; Función para obtener una fila de una cara.
 ;; @param i: Posición inicial (0).

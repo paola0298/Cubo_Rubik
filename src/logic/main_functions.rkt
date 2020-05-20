@@ -53,6 +53,12 @@
         cube
     ))
 
+;; Función para aplicar un paso al cubo interno
+;; @param mov_type: Tipo de movimiento, ya se filas o columnas
+;; @param mov_dir: Dirección del movimiento.
+;; @param index: Índice de la fila o columna.
+;; @param n: Tamaño del cubo.
+;; @param cube: Estado del cubo.
 (define (make_interactive_movement mov_type mov_dir index n cube)
     (cond 
         (mov_type
@@ -76,7 +82,7 @@
 ;; @param n: Tamaño del cubo.
 ;; @param cube: Estado del cubo.
 ;; @param steps: Lista de movimientos a aplicar al cubo.
-(define (RS n cube steps)
+(define (RS n cube steps) 
     (cond 
         ((null? steps)
             cube)
