@@ -1,12 +1,13 @@
 #lang racket/gui
 
-; Se importan las librerías necesarias.
+;; Se importan las librerías necesarias.
 (require 
     racket/include
     pict3d
     pict3d/universe)
 
-(include "../logic/cube_state.rkt") ; Borrar luego
+;; Se importan estados de cubo de ejemplo.
+(include "../logic/cube_state.rkt")
 
 ;; Se importan las funciones básicas de rotación
 (include "../logic/basic_functions.rkt")
@@ -16,14 +17,27 @@
 (include "../logic/main_functions.rkt")
 
 ;; Se importa la configuración de las escenas.
-(include "scene_config.rkt")
-(include "scene_constants.rkt")
+(include "general_config.rkt")
+(include "secuential_config.rkt")
+(include "interactive_config.rkt")
 
-; Se importa el modo secuencial.
+;; Se importan las funciones de renderizado.
+(include "render_functions.rkt")
+
+;; Se importa el modo secuencial.
 (include "secuential.rkt")
+;; Se importa el modo interactivo.
+(include "interactive.rkt")
 
+;; Función para convertir un string de una lista a una lista.
+;; @param str: String a convertir a lista.
 (define (convert str)
     (with-input-from-string str read))
+
+;; Función para verificar si un string es numérico.
+;; @param s: String a verificar.
+(define (string-numeric? s) 
+    (string->number s))
 
 ;Frame principal donde se colocaran botones para seleccionar el modo
 (define principalFrame(new frame% 
@@ -44,17 +58,18 @@
     [label "Bienvenido a Rubik Simulator!"]
     [font (make-object font% 25 'default 'normal 'bold)]))
 
+;; TODO: renombrar a secuencial cuando el modo interactivo esté listo
 (define Secuencialbutton (new button%
     [parent panelH]
     [min-width 150]
     [min-height 100]
     [font (make-object font% 25 'default 'normal 'bold)]
-    [label "Iniciar simulación"]
+    [label "Modo secuencial"]
     [callback (lambda (button event)
             (send secuencialFrame show #t)
             (send principalFrame show #f))]))
 
-#|
+
 (define Manualbutton (new button%
     [parent panelH]
     [min-width 150]
@@ -63,8 +78,9 @@
     [label "Modo Manual"]
     [callback (lambda (button event)
             (send ManualFrame show #t)
-            (send principalFrame show #f))]))
-|#
+            (send principalFrame show #f)
+            )]))
+
 
 ;Vista de menu de modo secuencial
 ;Frame donde iran todos los widgets
@@ -144,6 +160,66 @@
     [min-height 50]
     [style '(multiple)]))
 
+
+;Vista de modo manual
+(define ManualFrame (new frame%
+    [label "Modo Manual"]
+    [width 700]
+    [height 500]))
+
+(define ManualPanel (new vertical-panel%
+    [parent ManualFrame]
+    [horiz-margin 15]
+    [vert-margin 15]
+    [spacing 20]))
+
+(define welcomeManualMessage (new message%
+    [parent ManualPanel]
+    [label "Modo Manual"]
+    [font (make-object font% 17 'default 'normal 'bold)]))
+
+(define manualSettingsPanel (new vertical-panel%
+    [parent ManualPanel]
+    [horiz-margin 15]
+    [vert-margin 15]
+    [spacing 10]))
+
+(define manualSizePanel (new vertical-panel%
+    [parent manualSettingsPanel]
+    [horiz-margin 15]
+    [vert-margin 15]
+    [spacing 10]))
+
+(define manualInitialStatePanel (new vertical-panel%
+    [parent manualSettingsPanel]
+    [horiz-margin 15]
+    [vert-margin 15]
+    [spacing 10]))
+
+(define manualSizeMessage (new message%
+    [parent manualSizePanel]
+    [label "Tamaño del cubo"]))
+
+(define manualInitialMessage (new message%
+    [parent manualInitialStatePanel]
+    [label "Estado inicial del cubo"]))
+
+(define manualSizeSlider (new slider%
+    [parent manualSizePanel]
+    [label ""]
+    [min-value 2]
+    [max-value 15]
+    [init-value 3]))
+
+(define manualInitialText (new text-field%
+    [parent manualInitialStatePanel]
+    [label ""]
+    [init-value ""]
+    ;[min-width 150]
+    [min-height 150]
+    [style '(multiple)]))
+
+
 (define (setParameters size initial movements)
     (printf "Size ~a.\n" size)
     (printf "Initial state of cube ~a.\n" initial)
@@ -165,10 +241,51 @@
                 #:name "Rubik's Simulator - Secuencial"
                 #:display-mode 'fullscreen
                 #:frame-delay (/ 1000 60)
-                #:on-frame on-frame
-                #:on-draw on-draw)
+                #:on-frame on-frame-secuential
+                #:on-draw on-draw-secuential)
             ))))
 
+#|
+(define Manualbutton1 (new button%
+    [parent panelH]
+    [min-width 150]
+    [min-height 100]
+    [font (make-object font% 25 'default 'normal 'bold)]
+    [label "Modo Manual"]
+    [callback (lambda (button event)
+            ;(send ManualFrame show #t)
+            (send principalFrame show #f)
+            (set! cube-size 3)
+            (set! cube-internal-state cube3x3)
+            (big-bang3d empty-pict3d
+                #:name "Rubik's Simulator - Interactivo"
+                ;#:display-mode 'fullscreen
+                #:frame-delay (/ 1000 60)
+                #:on-frame on-frame-interactive
+                #:on-key on-key-interactive
+                #:on-draw on-draw-interactive)
+            )]))
+
+|#
+
+(define (initManualCallback b e)
+    (let ((size (send manualSizeSlider get-value))
+          (initialCube (send manualInitialText get-value)))
+    (cond 
+        ((equal? initialCube "")
+            (message-box "Error" "Por favor complete todos los campos" ManualFrame '(stop ok)))
+        (else
+            (send ManualFrame show #f)
+            (set! cube-size size)
+            (set! cube-internal-state (convert initialCube))
+            (big-bang3d empty-pict3d
+                #:name "Rubik's Simulator - Interactivo"
+                ;#:display-mode 'fullscreen
+                #:frame-delay (/ 1000 60)
+                #:on-frame on-frame-interactive
+                #:on-key on-key-interactive
+                #:on-draw on-draw-interactive)
+            ))))
 
 (define initSecuencialButton (new button%
     [parent secuencialPanel]
@@ -178,12 +295,14 @@
     [label "Iniciar"]
     [callback initSecuencialCallback]))
 
+(define initManualButton (new button%
+    [parent ManualPanel]
+    ;[min-width 150]
+    ;[min-height 100]
+    [font (make-object font% 15 'default 'normal 'bold)]
+    [label "Iniciar"]
+    [callback initManualCallback]))
 
-#|
-;Vista de modo manual
-(define ManualFrame (new frame%
-    [label "Modo Manual"]
-    [width 700]
-    [height 500]))
-|#
+
+
 (send principalFrame show #t)

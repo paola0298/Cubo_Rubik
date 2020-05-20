@@ -53,6 +53,14 @@
         cube
     ))
 
+(define (make_interactive_movement mov_type mov_dir index n cube)
+    (cond 
+        (mov_type
+            (rotate_col index mov_dir n cube))
+        (else
+            (rotate_row n index mov_dir cube))
+    ))
+
 ;; Función que procesa el paso a realizar y lo aplica en el cubo
 ;; @param raw-step: String del paso a realizar.
 ;; @param n: Tamaño del cubo.
